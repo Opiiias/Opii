@@ -25,19 +25,24 @@ const client = new Client({
 client.commands = new Collection();
 
 const commandsPath = path.join(__dirname, "commands");
-const commandFolders = fs.readdirSync(commandsPath);
 const slashCommandData = [];
 
-for (const folder of commandFolders) {
-  const folderPath = path.join(commandsPath, folder);
-  const commandFiles = fs.readdirSync(folderPath).filter((f) => f.endsWith(".js"));
-  for (const file of commandFiles) {
-    const command = require(path.join(folderPath, file));
-    if (!command.data || !command.execute) continue;
-    client.commands.set(command.data.name, command);
-    slashCommandData.push(command.data.toJSON());
+function loadCommands(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      loadCommands(fullPath);
+    } else if (entry.name.endsWith(".js")) {
+      const command = require(fullPath);
+      if (!command.data || !command.execute) continue;
+      client.commands.set(command.data.name, command);
+      slashCommandData.push(command.data.toJSON());
+    }
   }
 }
+
+loadCommands(commandsPath);
 
 const eventsPath = path.join(__dirname, "events");
 const eventFiles = fs.readdirSync(eventsPath).filter((f) => f.endsWith(".js"));
@@ -78,7 +83,6 @@ const webhookRouter = require("./webhook/webhookServer");
 const app = express();
 app.use(express.json());
 
-// Ovo dodajemo da Render ne gasi bota
 app.get("/", (req, res) => {
   res.send("Bot je aktivan!");
 });
