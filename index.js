@@ -77,6 +77,12 @@ const express = require("express");
 const webhookRouter = require("./webhook/webhookServer");
 const app = express();
 app.use(express.json());
+
+// Ovo dodajemo da Render ne gasi bota
+app.get("/", (req, res) => {
+  res.send("Bot je aktivan!");
+});
+
 app.use("/webhook", webhookRouter(client));
 
 const WEBHOOK_PORT = process.env.WEBHOOK_PORT || 3001;
