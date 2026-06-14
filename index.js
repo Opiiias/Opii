@@ -35,10 +35,18 @@ function loadCommands(dir) {
     if (entry.isDirectory()) {
       loadCommands(fullPath);
     } else if (entry.name.endsWith(".js")) {
-      const command = require(fullPath);
-      if (!command.data || !command.execute) continue;
-      client.commands.set(command.data.name, command);
-      slashCommandData.push(command.data.toJSON());
+      try {
+        const command = require(fullPath);
+        if (!command.data || !command.execute) {
+          console.log(`⚠️ Preskočen: ${fullPath}`);
+          continue;
+        }
+        console.log(`✅ Učitan: ${command.data.name}`);
+        client.commands.set(command.data.name, command);
+        slashCommandData.push(command.data.toJSON());
+      } catch (err) {
+        console.error(`❌ Greška pri učitavanju ${fullPath}:`, err.message);
+      }
     }
   }
 }
