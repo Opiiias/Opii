@@ -19,6 +19,16 @@ const ServerConfigSchema = new Schema({
     color: { type: String, default: "#E74C3C" },
     message: { type: String, default: "👋 **{username}** je napustio/la server **{server}**." },
   },
+  repeat: {
+    enabled: { type: Boolean, default: false },
+    channelId: { type: String, default: null },
+    interval: { type: Number, default: 5 },
+    message: { type: String, default: null },
+    color: { type: String, default: "#5865F2" },
+    image: { type: String, default: null },
+    url: { type: String, default: null },
+    mention: { type: String, default: null },
+  },
   autoMod: {
     enabled: { type: Boolean, default: false },
     bannedWords: {
