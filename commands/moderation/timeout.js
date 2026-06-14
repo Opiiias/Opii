@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js");
-const { sendModLog } = require("../../../utils/modLog");
+const { sendModLog } = require("../../utils/modLog");
 
 const TRAJANJA = [
   { name: "60 sekundi", value: 60 },
