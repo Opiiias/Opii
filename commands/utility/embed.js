@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,7 +9,7 @@ module.exports = {
     .addStringOption((o) => o.setName("opis").setDescription("Tekst poruke").setRequired(true))
     .addChannelOption((o) => o.setName("kanal").setDescription("Kanal za slanje").setRequired(false))
     .addStringOption((o) => o.setName("slika").setDescription("URL slike").setRequired(false))
-    .addStringOption((o) => o.setName("link").setDescription("URL za klik na naslov").setRequired(false))
+    .addStringOption((o) => o.setName("link").setDescription("URL za dugme 'Pogledaj'").setRequired(false))
     .addStringOption((o) => o.setName("boja").setDescription("Hex boja npr. #FF5733").setRequired(false))
     .addBooleanOption((o) => o.setName("everyone").setDescription("Taguj @everyone?").setRequired(false)),
 
@@ -31,10 +31,25 @@ module.exports = {
       .setFooter({ text: `Objavio: ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
 
     if (slika) embed.setImage(slika);
-    if (link) embed.setURL(link);
+
+    // Dugme "Pogledaj" — pojavljuje se samo ako je link unet
+    let components = [];
+    if (link) {
+      const dugme = new ButtonBuilder()
+        .setLabel("👁️ Pogledaj")
+        .setURL(link)
+        .setStyle(ButtonStyle.Link);
+
+      const row = new ActionRowBuilder().addComponents(dugme);
+      components = [row];
+    }
 
     try {
-      await channel.send({ content: everyone ? "@everyone" : undefined, embeds: [embed] });
+      await channel.send({
+        content: everyone ? "@everyone" : undefined,
+        embeds: [embed],
+        components,
+      });
       await interaction.reply({ content: `✅ Poruka poslata u <#${channel.id}>!`, ephemeral: true });
     } catch {
       await interaction.reply({ content: "❌ Nemam pristup tom kanalu.", ephemeral: true });
