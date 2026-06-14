@@ -30,6 +30,7 @@ const slashCommandData = [];
 function loadCommands(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
+    if (entry.name === "node_modules") continue;
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       loadCommands(fullPath);
