@@ -31,6 +31,12 @@ module.exports = {
         )
     )
     .addSubcommand((sub) =>
+      sub.setName("addwords").setDescription("Dodaj više zabranjenih reči odjednom.")
+        .addStringOption((opt) =>
+          opt.setName("reci").setDescription("Reči odvojene zarezom npr: psovka1, psovka2").setRequired(true)
+        )
+    )
+    .addSubcommand((sub) =>
       sub.setName("removeword").setDescription("Ukloni zabranjenu reč.")
         .addStringOption((opt) =>
           opt.setName("rec").setDescription("Reč za uklanjanje").setRequired(true)
@@ -103,6 +109,32 @@ module.exports = {
         embed.setColor(0xe74c3c).setTitle("🚫 Reč dodana").setDescription(`**${word}**`);
       } catch {
         embed.setColor(0xe74c3c).setTitle("⚠️ Reč već postoji na listi.");
+      }
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
+    if (sub === "addwords") {
+      const input = interaction.options.getString("reci");
+      const reci = input.split(",").map((r) => r.trim().toLowerCase()).filter((r) => r.length > 0);
+
+      let dodane = [];
+      let postojece = [];
+
+      for (const word of reci) {
+        try {
+          await BannedWord.create({ guildId, word, addedBy: interaction.user.id });
+          dodane.push(word);
+        } catch {
+          postojece.push(word);
+        }
+      }
+
+      embed.setColor(0xe74c3c).setTitle("🚫 Zabranjene Reči Dodane");
+      if (dodane.length > 0) {
+        embed.addFields({ name: "✅ Dodane", value: dodane.map(w => `\`${w}\``).join(", ") });
+      }
+      if (postojece.length > 0) {
+        embed.addFields({ name: "⚠️ Već postoje", value: postojece.map(w => `\`${w}\``).join(", ") });
       }
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
