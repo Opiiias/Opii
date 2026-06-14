@@ -9,9 +9,10 @@ const ServerConfigSchema = new Schema({
   trustedDomains: { type: [String], default: [] },
   welcome: {
     enabled: { type: Boolean, default: false },
-    channelId: { type: String, default: null },
+    channelIds: { type: [String], default: [] },
     color: { type: String, default: "#5865F2" },
     message: { type: String, default: "👋 Zdravo {user}, dobrodošao/la na **{server}**!" },
+    timer: { type: Number, default: 0 },
   },
   leave: {
     enabled: { type: Boolean, default: false },
