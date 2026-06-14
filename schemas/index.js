@@ -78,11 +78,66 @@ const WebNotificationSchema = new Schema({
   discordMessageId: { type: String, default: null },
   status: { type: String, enum: ["pending", "sent", "failed"], default: "pending" },
 }, { timestamps: true });
-
+const LogConfigSchema = new Schema({
+  guildId: { type: String, required: true, unique: true },
+  logs: {
+    memberJoin: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#2ecc71" },
+    },
+    memberLeave: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#e74c3c" },
+    },
+    messagDelete: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#e67e22" },
+    },
+    messageEdit: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#f39c12" },
+    },
+    memberBan: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#c0392b" },
+    },
+    memberUnban: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#27ae60" },
+    },
+    roleUpdate: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#9b59b6" },
+    },
+    timeout: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#e74c3c" },
+    },
+    channelCreate: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#3498db" },
+    },
+    channelDelete: {
+      enabled: { type: Boolean, default: false },
+      channelId: { type: String, default: null },
+      color: { type: String, default: "#e74c3c" },
+    },
+  },
+}, { timestamps: true });
 module.exports = {
   ServerConfig: mongoose.model("ServerConfig", ServerConfigSchema),
   BannedWord: mongoose.model("BannedWord", BannedWordSchema),
   Warning: mongoose.model("Warning", WarningSchema),
+  LogConfig: mongoose.model("LogConfig", LogConfigSchema),
   CustomCommand: mongoose.model("CustomCommand", CustomCommandSchema),
   SpamLog: mongoose.model("SpamLog", SpamLogSchema),
   WebNotification: mongoose.model("WebNotification", WebNotificationSchema),
