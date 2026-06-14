@@ -11,7 +11,7 @@ module.exports = {
     .addStringOption((o) => o.setName("slika").setDescription("URL slike").setRequired(false))
     .addStringOption((o) => o.setName("link").setDescription("URL za dugme 'Pogledaj'").setRequired(false))
     .addStringOption((o) => o.setName("boja").setDescription("Hex boja npr. #FF5733").setRequired(false))
-    .addBooleanOption((o) => o.setName("everyone").setDescription("Taguj @everyone?").setRequired(false)),
+    .addStringOption((o) => o.setName("tag").setDescription("Koga da taguje npr. @everyone @here ili @Korisnik").setRequired(false)),
 
   async execute(interaction) {
     const naslov = interaction.options.getString("naslov");
@@ -20,7 +20,7 @@ module.exports = {
     const slika = interaction.options.getString("slika");
     const link = interaction.options.getString("link");
     const bojaRaw = interaction.options.getString("boja") || "#5865F2";
-    const everyone = interaction.options.getBoolean("everyone") || false;
+    const tag = interaction.options.getString("tag") || null;
     const boja = parseInt(bojaRaw.replace("#", ""), 16) || 0x5865f2;
 
     const embed = new EmbedBuilder()
@@ -32,7 +32,6 @@ module.exports = {
 
     if (slika) embed.setImage(slika);
 
-    // Dugme "Pogledaj" — pojavljuje se samo ako je link unet
     let components = [];
     if (link) {
       const dugme = new ButtonBuilder()
@@ -46,7 +45,7 @@ module.exports = {
 
     try {
       await channel.send({
-        content: everyone ? "@everyone" : undefined,
+        content: tag || undefined,
         embeds: [embed],
         components,
       });
