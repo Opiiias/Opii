@@ -5,6 +5,6 @@ module.exports = {
   once: true,
   async execute(client) {
     console.log(`✅ Opii Bot je online kao ${client.user.tag}`);
-    client.user.setActivity("vaš server 👀", { type: ActivityType.Watching });
+    client.user.setActivity("Opii najbolji discord bot 🚀", { type: ActivityType.Watching });
   },
 };
