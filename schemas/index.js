@@ -158,6 +158,22 @@ const LogConfigSchema = new Schema({
   },
 }, { timestamps: true });
 
+const MemberLevelSchema = new Schema({
+  guildId: { type: String, required: true, index: true },
+  userId: { type: String, required: true, index: true },
+  messageCount: { type: Number, default: 0 },
+  level: { type: Number, default: 0 },
+}, { timestamps: true });
+MemberLevelSchema.index({ guildId: 1, userId: 1 }, { unique: true });
+
+const LevelConfigSchema = new Schema({
+  guildId: { type: String, required: true, unique: true },
+  enabled: { type: Boolean, default: false },
+  channelId: { type: String, default: null },
+  messagesPerLevel: { type: Number, default: 50 },
+  congratsMessage: { type: String, default: "🎉 Čestitamo {user}, sada si **Level {level}**!" },
+}, { timestamps: true });
+
 module.exports = {
   ServerConfig: mongoose.model("ServerConfig", ServerConfigSchema),
   BannedWord: mongoose.model("BannedWord", BannedWordSchema),
@@ -166,4 +182,6 @@ module.exports = {
   CustomCommand: mongoose.model("CustomCommand", CustomCommandSchema),
   SpamLog: mongoose.model("SpamLog", SpamLogSchema),
   WebNotification: mongoose.model("WebNotification", WebNotificationSchema),
+  MemberLevel: mongoose.model("MemberLevel", MemberLevelSchema),
+  LevelConfig: mongoose.model("LevelConfig", LevelConfigSchema),
 };
