@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, REST, Routes } = require("discord.js");
-const { CustomCommand } = require("../../../schemas");
+const { CustomCommand } = require("../../schemas");
 require("dotenv").config();
 
 module.exports = {
