@@ -7,6 +7,18 @@ const ServerConfigSchema = new Schema({
   modLogChannelId: { type: String, default: null },
   announcementChannelId: { type: String, default: null },
   trustedDomains: { type: [String], default: [] },
+  welcome: {
+    enabled: { type: Boolean, default: false },
+    channelId: { type: String, default: null },
+    color: { type: String, default: "#5865F2" },
+    message: { type: String, default: "👋 Zdravo {user}, dobrodošao/la na **{server}**!" },
+  },
+  leave: {
+    enabled: { type: Boolean, default: false },
+    channelId: { type: String, default: null },
+    color: { type: String, default: "#E74C3C" },
+    message: { type: String, default: "👋 **{username}** je napustio/la server **{server}**." },
+  },
   autoMod: {
     enabled: { type: Boolean, default: false },
     bannedWords: {
@@ -78,6 +90,7 @@ const WebNotificationSchema = new Schema({
   discordMessageId: { type: String, default: null },
   status: { type: String, enum: ["pending", "sent", "failed"], default: "pending" },
 }, { timestamps: true });
+
 const LogConfigSchema = new Schema({
   guildId: { type: String, required: true, unique: true },
   logs: {
@@ -133,6 +146,7 @@ const LogConfigSchema = new Schema({
     },
   },
 }, { timestamps: true });
+
 module.exports = {
   ServerConfig: mongoose.model("ServerConfig", ServerConfigSchema),
   BannedWord: mongoose.model("BannedWord", BannedWordSchema),
