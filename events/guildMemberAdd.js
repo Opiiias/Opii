@@ -4,14 +4,17 @@ const { ServerConfig } = require("../schemas");
 module.exports = {
   name: "guildMemberAdd",
   async execute(member) {
+    console.log(`🔔 guildMemberAdd okidan za: ${member.user.username}`);
     try {
       const config = await ServerConfig.findOne({ guildId: member.guild.id });
-      if (!config?.welcome?.enabled || !config?.welcome?.channelId) return;
+      console.log(`📋 Config pronađen:`, config?.welcome);
+      if (!config?.welcome?.enabled) return;
 
-      const channel = member.guild.channels.cache.get(config.welcome.channelId);
-      if (!channel) return;
+      const channelIds = config.welcome.channelIds || [];
+      console.log(`📋 ChannelIds:`, channelIds);
+      if (channelIds.length === 0) return;
 
-      const poruka = config.welcome.message
+      const poruka = (config.welcome.message || "👋 Zdravo {user}, dobrodošao/la na **{server}**!")
         .replaceAll("{user}", `<@${member.id}>`)
         .replaceAll("{username}", member.user.username)
         .replaceAll("{server}", member.guild.name)
@@ -25,7 +28,18 @@ module.exports = {
         .setFooter({ text: `Trenutno članova: ${member.guild.memberCount}` })
         .setTimestamp();
 
-      await channel.send({ embeds: [embed] });
+      for (const channelId of channelIds) {
+        const channel = member.guild.channels.cache.get(channelId);
+        if (!channel) {
+          console.log(`❌ Kanal nije pronađen: ${channelId}`);
+          continue;
+        }
+        console.log(`✅ Šaljem u kanal: ${channelId}`);
+        const sent = await channel.send({ embeds: [embed] });
+        if (config.welcome.timer > 0) {
+          setTimeout(() => sent.delete().catch(() => {}), config.welcome.timer * 1000);
+        }
+      }
     } catch (err) {
       console.error("guildMemberAdd greška:", err);
     }
