@@ -40,6 +40,17 @@ module.exports = {
           setTimeout(() => sent.delete().catch(() => {}), config.welcome.timer * 1000);
         }
       }
+
+      if (config.welcome.dmEnabled && config.welcome.dmMessage) {
+        const dmTekst = config.welcome.dmMessage
+          .replaceAll("{user}", member.user.username)
+          .replaceAll("{server}", member.guild.name);
+        try {
+          await member.user.send(dmTekst);
+        } catch (_) {
+          console.log(`❌ Ne mogu da pošaljem DM za: ${member.user.username}`);
+        }
+      }
     } catch (err) {
       console.error("guildMemberAdd greška:", err);
     }

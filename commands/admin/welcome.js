@@ -34,6 +34,14 @@ module.exports = {
       .setDescription("Uključi/isključi welcome poruke")
       .addBooleanOption(opt => opt.setName("stanje").setDescription("true/false").setRequired(true)))
     .addSubcommand(sub => sub
+      .setName("set-dm")
+      .setDescription("Poruka koja se šalje u DM novom članu ({user}, {server})")
+      .addStringOption(opt => opt.setName("poruka").setDescription("Tekst poruke").setRequired(true)))
+    .addSubcommand(sub => sub
+      .setName("dm-toggle")
+      .setDescription("Uključi/isključi DM poruku novim članovima")
+      .addBooleanOption(opt => opt.setName("stanje").setDescription("true/false").setRequired(true)))
+    .addSubcommand(sub => sub
       .setName("leave-channel")
       .setDescription("Postavi leave kanal")
       .addChannelOption(opt => opt.setName("kanal").setDescription("Kanal").setRequired(true)))
@@ -65,14 +73,10 @@ module.exports = {
       const input = interaction.options.getString("kanali");
       const mentions = input.split(",").map(s => s.trim());
       const channelIds = [];
-
       for (const mention of mentions) {
         const match = mention.match(/^<#(\d+)>$/) || mention.match(/^(\d+)$/);
-        if (match) {
-          channelIds.push(match[1]);
-        }
+        if (match) channelIds.push(match[1]);
       }
-
       if (channelIds.length === 0) {
         embed.setColor(0xe74c3c).setTitle("❌ Nisu pronađeni validni kanali").setDescription("Taguj kanale sa # ili unesi ID-eve odvojene zarezom.");
       } else {
@@ -103,6 +107,14 @@ module.exports = {
       const stanje = interaction.options.getBoolean("stanje");
       await ServerConfig.updateOne({ guildId }, { "welcome.enabled": stanje });
       embed.setColor(stanje ? 0x2ecc71 : 0xe74c3c).setTitle(`Welcome ${stanje ? "✅ UKLJUČEN" : "❌ ISKLJUČEN"}`);
+    } else if (sub === "set-dm") {
+      const msg = interaction.options.getString("poruka");
+      await ServerConfig.updateOne({ guildId }, { "welcome.dmMessage": msg });
+      embed.setColor(0x3498db).setTitle("✅ DM poruka postavljena").setDescription(`\`${msg}\``);
+    } else if (sub === "dm-toggle") {
+      const stanje = interaction.options.getBoolean("stanje");
+      await ServerConfig.updateOne({ guildId }, { "welcome.dmEnabled": stanje });
+      embed.setColor(stanje ? 0x2ecc71 : 0xe74c3c).setTitle(`DM poruka ${stanje ? "✅ UKLJUČENA" : "❌ ISKLJUČENA"}`);
     } else if (sub === "leave-channel") {
       const ch = interaction.options.getChannel("kanal");
       await ServerConfig.updateOne({ guildId }, { "leave.channelId": ch.id });

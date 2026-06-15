@@ -13,6 +13,8 @@ const ServerConfigSchema = new Schema({
     color: { type: String, default: "#5865F2" },
     message: { type: String, default: "👋 Zdravo {user}, dobrodošao/la na **{server}**!" },
     timer: { type: Number, default: 0 },
+    dmEnabled: { type: Boolean, default: false },
+    dmMessage: { type: String, default: null },
   },
   leave: {
     enabled: { type: Boolean, default: false },
