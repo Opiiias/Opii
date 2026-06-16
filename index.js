@@ -92,8 +92,8 @@ const webhookRouter = require("./webhook/webhookServer");
 const app = express();
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Bot je aktivan!");
+app.get("/ping", (req, res) => {
+  res.status(200).send("OK");
 });
 
 app.use("/webhook", webhookRouter(client));
