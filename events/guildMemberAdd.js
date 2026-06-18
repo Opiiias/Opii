@@ -28,18 +28,20 @@ module.exports = {
         .setFooter({ text: `Trenutno članova: ${member.guild.memberCount}` })
         .setTimestamp();
 
-      for (const channelId of channelIds) {
-        const channel = member.guild.channels.cache.get(channelId);
-        if (!channel) {
-          console.log(`❌ Kanal nije pronađen: ${channelId}`);
-          continue;
-        }
-        console.log(`✅ Šaljem u kanal: ${channelId}`);
-        const sent = await channel.send({ embeds: [embed] });
-        if (config.welcome.timer > 0) {
-          setTimeout(() => sent.delete().catch(() => {}), config.welcome.timer * 1000);
-        }
-      }
+      await Promise.allSettled(
+        channelIds.map(async (channelId) => {
+          const channel = member.guild.channels.cache.get(channelId);
+          if (!channel) {
+            console.log(`❌ Kanal nije pronađen: ${channelId}`);
+            return;
+          }
+          console.log(`✅ Šaljem u kanal: ${channelId}`);
+          const sent = await channel.send({ embeds: [embed] });
+          if (config.welcome.timer > 0) {
+            setTimeout(() => sent.delete().catch(() => {}), config.welcome.timer * 1000);
+          }
+        })
+      );
 
       if (config.welcome.dmEnabled && config.welcome.dmMessage) {
         const dmTekst = config.welcome.dmMessage
