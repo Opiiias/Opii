@@ -28,6 +28,9 @@ module.exports = {
         .setFooter({ text: `Trenutno članova: ${member.guild.memberCount}` })
         .setTimestamp();
 
+      // ako timer nije podešen u bazi, koristi 7 sekundi kao podrazumevano
+      const timerSeconds = config.welcome.timer > 0 ? config.welcome.timer : 7;
+
       await Promise.allSettled(
         channelIds.map(async (channelId) => {
           const channel = member.guild.channels.cache.get(channelId);
@@ -37,9 +40,7 @@ module.exports = {
           }
           console.log(`✅ Šaljem u kanal: ${channelId}`);
           const sent = await channel.send({ embeds: [embed] });
-          if (config.welcome.timer > 0) {
-            setTimeout(() => sent.delete().catch(() => {}), config.welcome.timer * 1000);
-          }
+          setTimeout(() => sent.delete().catch(() => {}), timerSeconds * 1000);
         })
       );
 
