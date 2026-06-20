@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/verifysetup.js << 'EOF'
 const {
   SlashCommandBuilder,
   EmbedBuilder,
@@ -82,4 +81,3 @@ module.exports = {
     }
   },
 };
-EOF
