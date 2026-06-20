@@ -16,6 +16,16 @@ const ServerConfigSchema = new Schema({
     dmEnabled: { type: Boolean, default: false },
     dmMessage: { type: String, default: null },
   },
+  verify: {
+    enabled: { type: Boolean, default: false },
+    channelId: { type: String, default: null },
+    roleId: { type: String, default: null },
+    title: { type: String, default: "✅ Verifikacija" },
+    message: { type: String, default: "Klikni dugme ispod da se verifikuješ i otključaš sve kanale!" },
+    buttonText: { type: String, default: "Verifikacija" },
+    color: { type: String, default: "#5865F2" },
+    lockChannels: { type: Boolean, default: false },
+  },
   leave: {
     enabled: { type: Boolean, default: false },
     channelId: { type: String, default: null },

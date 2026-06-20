@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const crypto = require("crypto");
+const axios = require("axios");
 const { EmbedBuilder } = require("discord.js");
 const { ServerConfig, WebNotification } = require("../schemas");
 
@@ -72,6 +73,66 @@ module.exports = function webhookRouter(client) {
     );
 
     return res.json({ success: true, message: "Konfiguracija ažurirana." });
+  });
+
+  router.get("/auth/discord/redirect", async (req, res) => {
+    const { code, guildId } = req.query;
+
+    if (!code) {
+      return res.status(400).send("Nedostaje autorizacioni kod.");
+    }
+
+    try {
+      const params = new URLSearchParams({
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.DISCORD_CLIENT_SECRET,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: "https://opii.onrender.com/webhook/auth/discord/redirect",
+      });
+
+      const tokenRes = await axios.post("https://discord.com/api/v10/oauth2/token", params, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
+
+      const accessToken = tokenRes.data.access_token;
+
+      const userRes = await axios.get("https://discord.com/api/v10/users/@me", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const discordUser = userRes.data;
+
+      const config = await ServerConfig.findOne({ guildId });
+      if (!config?.verify?.roleId) {
+        return res.status(404).send("Verifikacija nije podešena za ovaj server.");
+      }
+
+      const guild = await client.guilds.fetch(guildId);
+
+      await axios.put(
+        `https://discord.com/api/v10/guilds/${guildId}/members/${discordUser.id}`,
+        { access_token: accessToken },
+        { headers: { Authorization: `Bot ${process.env.DISCORD_TOKEN}`, "Content-Type": "application/json" } }
+      ).catch(() => null);
+
+      const member = await guild.members.fetch(discordUser.id).catch(() => null);
+      if (member) {
+        await member.roles.add(config.verify.roleId).catch(() => null);
+      }
+
+      res.send(`
+        <html>
+          <body style="background:#2c2f33;color:white;font-family:sans-serif;text-align:center;padding-top:100px;">
+            <h1>✅ Verifikacija uspešna!</h1>
+            <p>Možeš se vratiti na Discord.</p>
+          </body>
+        </html>
+      `);
+    } catch (err) {
+      console.error("❌ Greška u OAuth2 verifikaciji:", err.response?.data || err.message);
+      res.status(500).send("Greška prilikom verifikacije. Pokušaj ponovo.");
+    }
   });
 
   return router;
