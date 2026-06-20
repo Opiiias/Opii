@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { ServerConfig } = require("../schemas");
 const mongoose = require("mongoose");
 
@@ -48,11 +48,19 @@ module.exports = function webhookRouter(client) {
       const embed = new EmbedBuilder()
         .setColor("#5865F2")
         .setTitle("✅ Verifikacija")
-        .setDescription(`Klikni link ispod da se verifikuješ:\n\n[Klikni ovde da se verifikuješ](${verifyUrl})`)
+        .setDescription(`Klikni link ispod ili dugme da se verifikuješ:\n\n[Klikni ovde da se verifikuješ](${verifyUrl})`)
         .setFooter({ text: "Link važi 10 minuta" })
         .setTimestamp();
 
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Verifikuj se")
+          .setStyle(ButtonStyle.Link)
+          .setURL(verifyUrl)
+          .setEmoji("✅")
+      );
+
+      await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
     } catch (err) {
       console.error(err);
       await interaction.reply({ content: "❌ Greška, pokušaj ponovo.", ephemeral: true });
