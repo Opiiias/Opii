@@ -52,11 +52,10 @@ module.exports = function webhookRouter(client) {
         .setFooter({ text: "Link važi 10 minuta" })
         .setTimestamp();
 
-      await member.send({ embeds: [embed] });
-      await interaction.reply({ content: "📧 Poslali smo ti DM sa linkom!", ephemeral: true });
+      await interaction.reply({ embeds: [embed], ephemeral: true });
     } catch (err) {
       console.error(err);
-      await interaction.reply({ content: "❌ Nije moguće poslati DM. Otvori DM-ove pa pokušaj ponovo.", ephemeral: true });
+      await interaction.reply({ content: "❌ Greška, pokušaj ponovo.", ephemeral: true });
     }
   });
 
