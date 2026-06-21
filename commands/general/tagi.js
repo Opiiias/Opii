@@ -20,6 +20,9 @@ module.exports = {
         .addIntegerOption((opt) =>
           opt.setName("sekunde").setDescription("Na koliko sekundi se šalje tag").setRequired(true)
         )
+        .addIntegerOption((opt) =>
+          opt.setName("brisanje").setDescription("Posle koliko sekundi se briše poslata poruka (ostavi prazno = bez brisanja)").setRequired(false)
+        )
     )
     .addSubcommand((sub) =>
       sub
@@ -62,21 +65,28 @@ module.exports = {
     if (sub === "postavi") {
       const tag = interaction.options.getString("tag");
       const sekunde = interaction.options.getInteger("sekunde");
+      const brisanje = interaction.options.getInteger("brisanje"); // može biti null
 
       if (sekunde < 1) {
         embed.setColor(0xe74c3c).setTitle("❌ Greška").setDescription("Interval mora biti najmanje 1 sekunda!");
         return interaction.reply({ embeds: [embed], ephemeral: true });
       }
+      if (brisanje !== null && brisanje < 1) {
+        embed.setColor(0xe74c3c).setTitle("❌ Greška").setDescription("Vreme brisanja mora biti najmanje 1 sekunda!");
+        return interaction.reply({ embeds: [embed], ephemeral: true });
+      }
 
       await ServerConfig.updateOne(
         { guildId },
-        { $set: { "tagi.tag": tag, "tagi.interval": sekunde } },
+        { $set: { "tagi.tag": tag, "tagi.interval": sekunde, "tagi.autoDelete": brisanje || null } },
         { upsert: true }
       );
 
       embed.setColor(0x2ecc71)
         .setTitle("✅ Tag postavljen")
-        .setDescription(`**Tag:** ${tag}\n**Interval:** svakih ${sekunde} sekundi`);
+        .setDescription(
+          `**Tag:** ${tag}\n**Interval:** svakih ${sekunde} sekundi\n**Brisanje poruke:** ${brisanje ? `posle ${brisanje} sekundi` : "isključeno"}`
+        );
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
@@ -156,6 +166,7 @@ module.exports = {
           { name: "Status", value: tagi?.enabled ? "🟢 Uključeno" : "🔴 Isključeno" },
           { name: "Tag", value: tagi?.tag || "Nije postavljen" },
           { name: "Interval", value: tagi?.interval ? `${tagi.interval} sekundi` : "Nije postavljen" },
+          { name: "Brisanje poruke", value: tagi?.autoDelete ? `${tagi.autoDelete} sekundi nakon slanja` : "Isključeno" },
           { name: "Kanali", value: tagi?.kanali?.length ? tagi.kanali.map(id => `<#${id}>`).join(", ") : "Nema kanala" }
         );
       return interaction.reply({ embeds: [embed], ephemeral: true });

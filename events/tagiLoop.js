@@ -12,12 +12,12 @@ module.exports = {
         const now = Date.now();
 
         for (const config of configs) {
-          const { tag, kanali, interval } = config.tagi || {};
+          const { tag, kanali, interval, autoDelete } = config.tagi || {};
           if (!tag || !kanali?.length || !interval) continue;
 
           const guildId = config.guildId;
           const last = lastSent.get(guildId) || 0;
-          const intervalMs = interval * 1000; // interval je sada u sekundama
+          const intervalMs = interval * 1000; // interval je u sekundama
 
           if (now - last < intervalMs) continue;
 
@@ -27,7 +27,15 @@ module.exports = {
           for (const channelId of kanali) {
             try {
               const channel = guild.channels.cache.get(channelId);
-              if (channel) await channel.send(tag);
+              if (!channel) continue;
+
+              const sentMsg = await channel.send(tag);
+
+              if (autoDelete && autoDelete > 0) {
+                setTimeout(() => {
+                  sentMsg.delete().catch(() => {});
+                }, autoDelete * 1000);
+              }
             } catch (e) {
               console.error(`Greška pri slanju taga u kanal ${channelId}:`, e.message);
             }
