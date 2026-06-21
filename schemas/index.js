@@ -42,6 +42,13 @@ const ServerConfigSchema = new Schema({
     url: { type: String, default: null },
     mention: { type: String, default: null },
   },
+  tagi: {
+    enabled: { type: Boolean, default: false },
+    tag: { type: String, default: null },
+    interval: { type: Number, default: null },
+    autoDelete: { type: Number, default: null },
+    kanali: { type: [String], default: [] },
+  },
   autoMod: {
     enabled: { type: Boolean, default: false },
     bannedWords: {
