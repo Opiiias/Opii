@@ -1,7 +1,5 @@
 const { ServerConfig } = require("../schemas");
 
-const lastSent = new Map(); // guildId -> timestamp poslednjeg slanja
-
 module.exports = {
   name: "ready",
   once: true,
@@ -12,17 +10,21 @@ module.exports = {
         const now = Date.now();
 
         for (const config of configs) {
-          const { tag, kanali, interval, autoDelete } = config.tagi || {};
+          const { tag, kanali, interval, autoDelete, lastSent } = config.tagi || {};
           if (!tag || !kanali?.length || !interval) continue;
 
-          const guildId = config.guildId;
-          const last = lastSent.get(guildId) || 0;
-          const intervalMs = interval * 1000; // interval je u sekundama
+          const intervalMs = interval * 1000;
+          const last = lastSent ? new Date(lastSent).getTime() : 0;
 
           if (now - last < intervalMs) continue;
 
-          const guild = client.guilds.cache.get(guildId);
+          const guild = client.guilds.cache.get(config.guildId);
           if (!guild) continue;
+
+          await ServerConfig.updateOne(
+            { guildId: config.guildId },
+            { $set: { "tagi.lastSent": new Date() } }
+          );
 
           for (const channelId of kanali) {
             try {
@@ -40,12 +42,10 @@ module.exports = {
               console.error(`Greška pri slanju taga u kanal ${channelId}:`, e.message);
             }
           }
-
-          lastSent.set(guildId, now);
         }
       } catch (err) {
         console.error("Tagi loop greška:", err);
       }
-    }, 1000); // proverava svake sekunde
+    }, 5000);
   },
 };
