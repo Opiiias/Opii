@@ -6,7 +6,7 @@ module.exports = {
     .setDescription("Kopira sve kanale iz ovog servera u drugi server bez brisanja")
     .addStringOption(option =>
       option.setName("serverid")
-        .setDescription("ID ciljnog servera u koji se kopiraju kanali")
+        .setDescription("ID ciljnog servera u koji se kopiraju kanale")
         .setRequired(true)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
@@ -21,8 +21,11 @@ module.exports = {
       return interaction.editReply("❌ Ne možeš koristiti isti server kao izvor i cilj!");
     }
 
-    const targetGuild = interaction.client.guilds.cache.get(targetId);
-    if (!targetGuild) {
+    let targetGuild;
+    try {
+      targetGuild = await interaction.client.guilds.fetch(targetId);
+      await targetGuild.channels.fetch();
+    } catch {
       return interaction.editReply("❌ Bot nije na tom serveru ili je ID pogrešan.");
     }
 
@@ -32,7 +35,6 @@ module.exports = {
       await sourceGuild.channels.fetch();
       const sourceChannels = sourceGuild.channels.cache.sort((a, b) => a.position - b.position);
 
-      // Mapa: stari ID kategorije -> novi kanal objekat
       const categoryMap = new Map();
 
       // 1. Kreiraj kategorije
