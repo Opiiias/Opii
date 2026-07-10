@@ -3,7 +3,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("postaviverifikaciju")
-    .setDescription("Postavi poruku za Admiral BET verifikaciju")
+    .setDescription("Postavi poruku za Balkanske Droljice Telegram verifikaciju")
     .addChannelOption(opt =>
       opt.setName("kanal")
         .setDescription("Kanal u koji se šalje poruka")
@@ -51,19 +51,19 @@ module.exports = {
       .setDescription(opis)
       .setColor(boja)
       .setTimestamp()
-      .setFooter({ text: "Admiral BET Verifikacija" });
+      .setFooter({ text: "Balkanske Droljice Verifikacija" });
 
     if (slika) embed.setImage(slika);
     if (thumbnail) embed.setThumbnail(thumbnail);
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setLabel("Registruj se")
+        .setLabel("📲 Uđi u Telegram grupu")
         .setStyle(ButtonStyle.Link)
-        .setURL("https://admiralbet.rs/registration/ABFUZU/"),
+        .setURL("https://t.me/balkanskedroljice"),
       new ButtonBuilder()
-        .setCustomId("vec_registrovan")
-        .setLabel("✅ Već sam se registrovao")
+        .setCustomId("vec_usao")
+        .setLabel("✅ Već sam ušao u grupu")
         .setStyle(ButtonStyle.Primary)
     );
 

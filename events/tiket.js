@@ -7,9 +7,9 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
-    // Kada klikne "Već sam se registrovao"
-    if (interaction.customId === "vec_registrovan") {
-      let tekst = "✅ Odlično! Ako ste se uspešno registrovali na Admiral BET putem našeg linka, kliknite dugme ispod da otvorite tiket i pošaljete screenshot kao dokaz registracije.";
+    // Kada klikne "Već sam ušao u grupu"
+    if (interaction.customId === "vec_usao") {
+      let tekst = "✅ Odlično! Ako ste ušli u Telegram grupu Balkanske Droljice i uslikali ekran (screenshot) kao dokaz, kliknite dugme ispod da otvorite tiket i pošaljete screenshot.";
 
       try {
         const putanja = path.join(__dirname, "../data/ephemeralPoruka.json");
@@ -52,7 +52,7 @@ module.exports = {
 
       const broj = guild.channels.cache.filter(ch => ch.name.startsWith("tiket-")).size + 1;
 
-      // Kreiraj tiket kanal
+      // Kreiraj tiket kanal (vidljiv samo botu i korisniku koji ga je otvorio)
       const tiketKanal = await guild.channels.create({
         name: `tiket-${broj}`,
         type: ChannelType.GuildText,
@@ -75,8 +75,8 @@ module.exports = {
       });
 
       // Učitaj tiket poruku
-      let naslov = "🎫 Admiral BET Verifikacija";
-      let opis = `Zdravo ${member}! 👋\n\nPošaljite screenshot vaše registracije na Admiral BET.\n\nSačekajte da naš tim pregleda vaš zahtev.`;
+      let naslov = "🔞 Balkanske Droljice Verifikacija";
+      let opis = `Zdravo ${member}! 👋\n\nAko ste se pridružili telegram grupi pošaljite screen ekrana kao dokaz da ste ušli i sačekajte da vam Admini odobre pristup 18+ Sadržaju.`;
       let boja = "FFD700";
       let slika = null;
       let thumbnail = null;
@@ -98,7 +98,7 @@ module.exports = {
         .setDescription(opis)
         .setColor(parseInt(boja.replace("#", ""), 16))
         .setTimestamp()
-        .setFooter({ text: "Admiral BET Verifikacija" });
+        .setFooter({ text: "Balkanske Droljice Verifikacija" });
 
       if (slika) embed.setImage(slika);
       if (thumbnail) embed.setThumbnail(thumbnail);
