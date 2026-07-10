@@ -1,36 +1,59 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, ChannelType } = require("discord.js");
-
-let tiketBrojac = 1;
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   name: "interactionCreate",
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
+    // Dugme Registruj se - pokazuje ephemeral poruku sa Otvori tiket
+    if (interaction.customId === "registruj_se_info") {
+      let tekst = "✅ Ako ste se uspešno registrovali na Admiral BET putem našeg linka, kliknite dugme ispod da otvorite tiket i pošaljete screenshot kao dokaz registracije.";
+
+      try {
+        const putanja = path.join(__dirname, "../data/ephemeralPoruka.json");
+        if (fs.existsSync(putanja)) {
+          const podaci = JSON.parse(fs.readFileSync(putanja));
+          tekst = podaci.tekst;
+        }
+      } catch {}
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("otvori_tiket")
+          .setLabel("🎫 Otvori tiket")
+          .setStyle(ButtonStyle.Success)
+      );
+
+      return interaction.reply({ content: tekst, components: [row], ephemeral: true });
+    }
+
+    // Dugme Otvori tiket
     if (interaction.customId === "otvori_tiket") {
       await interaction.deferReply({ ephemeral: true });
 
       const guild = interaction.guild;
       const member = interaction.member;
 
-      // Provjeri da li vec ima otvoren tiket
       const postojeci = guild.channels.cache.find(
-        ch => ch.name === `tiket-${member.user.username.toLowerCase().replace(/\s/g, "-")}`
+        ch => ch.topic === `tiket-${member.id}`
       );
 
       if (postojeci) {
         return interaction.editReply(`❌ Već imaš otvoren tiket: <#${postojeci.id}>`);
       }
 
-      // Nađi kategoriju Tiketi
       const kategorija = guild.channels.cache.find(
         ch => ch.name === "Tiketi" && ch.type === ChannelType.GuildCategory
       );
 
-      // Kreiraj tiket kanal
+      const broj = guild.channels.cache.filter(ch => ch.name.startsWith("tiket-")).size + 1;
+
       const tiketKanal = await guild.channels.create({
-        name: `tiket-${tiketBrojac++}`,
+        name: `tiket-${broj}`,
         type: ChannelType.GuildText,
+        topic: `tiket-${member.id}`,
         parent: kategorija?.id || null,
         permissionOverwrites: [
           {
@@ -48,22 +71,34 @@ module.exports = {
         ],
       });
 
-      // Poruka u tiketu
-      const tiketEmbed = new EmbedBuilder()
-        .setTitle("🎫 Admiral BET Verifikacija")
-        .setDescription(
-          `Zdravo ${member}! 👋\n\n` +
-          "**Uputstvo za verifikaciju:**\n\n" +
-          "1️⃣ Pošaljite screenshot vaše registracije na Admiral BET\n" +
-          "2️⃣ Screenshot mora prikazivati vaše korisničko ime i datum registracije\n" +
-          "3️⃣ Registracija mora biti obavljena putem našeg linka\n" +
-          "4️⃣ Sačekajte da naš tim pregleda vaš zahtev\n\n" +
-          "⏳ Vreme čekanja: **do 24 sata**\n\n" +
-          "❓ Ako imate pitanja, slobodno ih postavite ovde."
-        )
-        .setColor(0xFFD700)
-        .setFooter({ text: "Admiral BET Verifikacija" })
-        .setTimestamp();
+      // Učitaj tiket poruku
+      let naslov = "🎫 Admiral BET Verifikacija";
+      let opis = `Zdravo ${member}! 👋\n\nPošaljite screenshot vaše registracije na Admiral BET.\n\nSačekajte da naš tim pregleda vaš zahtev.`;
+      let boja = "FFD700";
+      let slika = null;
+      let thumbnail = null;
+
+      try {
+        const putanja = path.join(__dirname, "../data/tiketPoruka.json");
+        if (fs.existsSync(putanja)) {
+          const podaci = JSON.parse(fs.readFileSync(putanja));
+          naslov = podaci.naslov || naslov;
+          opis = podaci.opis.replace("{member}", `${member}`) || opis;
+          boja = podaci.boja || boja;
+          slika = podaci.slika || null;
+          thumbnail = podaci.thumbnail || null;
+        }
+      } catch {}
+
+      const embed = new EmbedBuilder()
+        .setTitle(naslov)
+        .setDescription(opis.replace("{member}", `${member}`))
+        .setColor(parseInt(boja.replace("#", ""), 16))
+        .setTimestamp()
+        .setFooter({ text: "Admiral BET Verifikacija" });
+
+      if (slika) embed.setImage(slika);
+      if (thumbnail) embed.setThumbnail(thumbnail);
 
       const zatvoriRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -72,11 +107,11 @@ module.exports = {
           .setStyle(ButtonStyle.Danger)
       );
 
-      await tiketKanal.send({ content: `${member}`, embeds: [tiketEmbed], components: [zatvoriRow] });
-
+      await tiketKanal.send({ content: `${member}`, embeds: [embed], components: [zatvoriRow] });
       await interaction.editReply(`✅ Tvoj tiket je otvoren: <#${tiketKanal.id}>`);
     }
 
+    // Zatvori tiket
     if (interaction.customId === "zatvori_tiket") {
       await interaction.reply({ content: "🔒 Tiket se zatvara za 5 sekundi...", ephemeral: true });
       setTimeout(() => {
