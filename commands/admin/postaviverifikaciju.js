@@ -26,7 +26,7 @@ module.exports = {
     )
     .addStringOption(opt =>
       opt.setName("slika")
-        .setDescription("Link slike ili gifa koji se prikazuje u poruci")
+        .setDescription("Link slike ili gifa")
         .setRequired(false)
     )
     .addStringOption(opt =>
@@ -61,6 +61,10 @@ module.exports = {
         .setLabel("Registruj se")
         .setStyle(ButtonStyle.Link)
         .setURL("https://admiralbet.rs/registration/ABFUZU/"),
+      new ButtonBuilder()
+        .setCustomId("vec_registrovan")
+        .setLabel("✅ Već sam se registrovao")
+        .setStyle(ButtonStyle.Primary)
     );
 
     await kanal.send({ embeds: [embed], components: [row] });
