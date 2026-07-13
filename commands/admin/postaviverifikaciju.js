@@ -60,7 +60,7 @@ module.exports = {
       new ButtonBuilder()
         .setLabel("📲 Uđi u Telegram grupu")
         .setStyle(ButtonStyle.Link)
-        .setURL("https://t.me/balkanskedroljice"),
+        .setURL("https://t.me/+-DA4VIz8sqoxMzI0"),
       new ButtonBuilder()
         .setCustomId("vec_usao")
         .setLabel("✅ Već sam ušao u grupu")

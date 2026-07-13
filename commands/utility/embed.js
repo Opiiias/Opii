@@ -8,16 +8,18 @@ module.exports = {
     .addStringOption((o) => o.setName("naslov").setDescription("Naslov embed-a").setRequired(true))
     .addStringOption((o) => o.setName("opis").setDescription("Tekst poruke").setRequired(true))
     .addChannelOption((o) => o.setName("kanal").setDescription("Kanal za slanje").setRequired(false))
-    .addStringOption((o) => o.setName("slika").setDescription("URL slike").setRequired(false))
+    .addAttachmentOption((o) => o.setName("slika").setDescription("Slika za embed").setRequired(false))
+    .addAttachmentOption((o) => o.setName("snimak").setDescription("Video/snimak za slanje").setRequired(false))
     .addStringOption((o) => o.setName("link").setDescription("URL za dugme 'Pogledaj'").setRequired(false))
     .addStringOption((o) => o.setName("boja").setDescription("Hex boja npr. #FF5733").setRequired(false))
-    .addStringOption((o) => o.setName("tag").setDescription("Koga da taguje npr. @everyone @here ili @Korisnik").setRequired(false)),
+    .addStringOption((o) => o.setName("tag").setDescription("Koga da taguje npr. @everyone @here").setRequired(false)),
 
   async execute(interaction) {
     const naslov = interaction.options.getString("naslov");
     const opis = interaction.options.getString("opis");
     const channel = interaction.options.getChannel("kanal") || interaction.channel;
-    const slika = interaction.options.getString("slika");
+    const slika = interaction.options.getAttachment("slika");
+    const snimak = interaction.options.getAttachment("snimak");
     const link = interaction.options.getString("link");
     const bojaRaw = interaction.options.getString("boja") || "#5865F2";
     const tag = interaction.options.getString("tag") || null;
@@ -30,24 +32,29 @@ module.exports = {
       .setTimestamp()
       .setFooter({ text: `Objavio: ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
 
-    if (slika) embed.setImage(slika);
+    if (slika) embed.setImage(slika.url);
 
+    // Dugme Pogledaj
     let components = [];
     if (link) {
       const dugme = new ButtonBuilder()
         .setLabel("👁️ Pogledaj")
         .setURL(link)
         .setStyle(ButtonStyle.Link);
-
       const row = new ActionRowBuilder().addComponents(dugme);
       components = [row];
     }
+
+    // Fajlovi za slanje (snimak)
+    const files = [];
+    if (snimak) files.push(snimak.url);
 
     try {
       await channel.send({
         content: tag || undefined,
         embeds: [embed],
         components,
+        files,
       });
       await interaction.reply({ content: `✅ Poruka poslata u <#${channel.id}>!`, ephemeral: true });
     } catch {
