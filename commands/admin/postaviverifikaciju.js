@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("postaviverifikaciju")
@@ -35,7 +34,6 @@ module.exports = {
         .setRequired(false)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
-
   async execute(interaction) {
     const kanal = interaction.options.getChannel("kanal");
     const naslov = interaction.options.getString("naslov");
@@ -43,30 +41,25 @@ module.exports = {
     const bojaHex = interaction.options.getString("boja") || "FFD700";
     const slika = interaction.options.getString("slika");
     const thumbnail = interaction.options.getString("thumbnail");
-
     const boja = parseInt(bojaHex.replace("#", ""), 16);
-
     const embed = new EmbedBuilder()
       .setTitle(naslov)
       .setDescription(opis)
       .setColor(boja)
       .setTimestamp()
       .setFooter({ text: "Balkanske Droljice Verifikacija" });
-
     if (slika) embed.setImage(slika);
     if (thumbnail) embed.setThumbnail(thumbnail);
-
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setLabel("📲 Uđi u Telegram grupu")
         .setStyle(ButtonStyle.Link)
-        .setURL("https://t.me/+-DA4VIz8sqoxMzI0"),
+        .setURL("https://telegram.me/+r0xJQy1PvjI0OGI0"),
       new ButtonBuilder()
         .setCustomId("vec_usao")
         .setLabel("✅ Već sam ušao u grupu")
         .setStyle(ButtonStyle.Primary)
     );
-
     await kanal.send({ embeds: [embed], components: [row] });
     await interaction.reply({ content: "✅ Poruka postavljena!", ephemeral: true });
   }
