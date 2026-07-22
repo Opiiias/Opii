@@ -1,8 +1,9 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("postaviverifikaciju")
-    .setDescription("Postavi poruku za Balkanske Droljice Telegram verifikaciju")
+    .setDescription("Postavi poruku za verifikaciju")
     .addChannelOption(opt =>
       opt.setName("kanal")
         .setDescription("Kanal u koji se šalje poruka")
@@ -20,7 +21,7 @@ module.exports = {
     )
     .addStringOption(opt =>
       opt.setName("boja")
-        .setDescription("Boja embeda u hex (npr. FFD700)")
+        .setDescription("Boja embeda u hex (npr. FF0000)")
         .setRequired(false)
     )
     .addStringOption(opt =>
@@ -28,38 +29,37 @@ module.exports = {
         .setDescription("Link slike ili gifa")
         .setRequired(false)
     )
-    .addStringOption(opt =>
-      opt.setName("thumbnail")
-        .setDescription("Mala slika u gornjem desnom uglu")
-        .setRequired(false)
-    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+
   async execute(interaction) {
     const kanal = interaction.options.getChannel("kanal");
     const naslov = interaction.options.getString("naslov");
     const opis = interaction.options.getString("opis").replace(/\\n/g, "\n");
-    const bojaHex = interaction.options.getString("boja") || "FFD700";
+    const bojaHex = interaction.options.getString("boja") || "FF0000";
     const slika = interaction.options.getString("slika");
-    const thumbnail = interaction.options.getString("thumbnail");
+
     const boja = parseInt(bojaHex.replace("#", ""), 16);
+
     const embed = new EmbedBuilder()
       .setTitle(naslov)
       .setDescription(opis)
       .setColor(boja)
       .setTimestamp()
-      .setFooter({ text: "Balkanske Droljice Verifikacija" });
+      .setFooter({ text: "Verifikacija" });
+
     if (slika) embed.setImage(slika);
-    if (thumbnail) embed.setThumbnail(thumbnail);
+
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setLabel("📲 Uđi u Telegram grupu")
+        .setLabel("🔗 Verifikacija")
         .setStyle(ButtonStyle.Link)
-        .setURL("https://telegram.me/+r0xJQy1PvjI0OGI0"),
+        .setURL("https://link-hub.net/6147336/N8qeeebrob8i"),
       new ButtonBuilder()
-        .setCustomId("vec_usao")
-        .setLabel("✅ Već sam ušao u grupu")
+        .setCustomId("verifikovao_sam_se")
+        .setLabel("✅ Verifikovao sam se")
         .setStyle(ButtonStyle.Primary)
     );
+
     await kanal.send({ embeds: [embed], components: [row] });
     await interaction.reply({ content: "✅ Poruka postavljena!", ephemeral: true });
   }
