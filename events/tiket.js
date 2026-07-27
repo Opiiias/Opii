@@ -1,28 +1,28 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, ChannelType } = require("discord.js");
-const fs = require("fs");
-const path = require("path");
 
 module.exports = {
   name: "interactionCreate",
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
-    if (interaction.customId === "verifikovao_sam_se") {
+    // Kada klikne "Poslao sam video"
+    if (interaction.customId === "poslao_sam_video") {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId("otvori_tiket")
+          .setCustomId("otvori_tiket_video")
           .setLabel("🎫 Otvori tiket")
           .setStyle(ButtonStyle.Success)
       );
 
       return interaction.reply({
-        content: "🔐 Ako ste ušli na link i videli kod, potrebno je da otvorite tiket i napišete sedmocifreni broj koji je pisao u folderu.\n\n👇 Kliknite **Otvori tiket** ispod!",
+        content: "✅ Odlično! Ako si poslao video u drugi server klikni dugme ispod da otvoriš tiket i pošalješ screenshot kao dokaz!\n\n👇 Klikni **Otvori tiket** ispod!",
         components: [row],
         ephemeral: true
       });
     }
 
-    if (interaction.customId === "otvori_tiket") {
+    // Otvori tiket
+    if (interaction.customId === "otvori_tiket_video") {
       await interaction.deferReply({ ephemeral: true });
 
       const guild = interaction.guild;
@@ -64,15 +64,15 @@ module.exports = {
       });
 
       const embed = new EmbedBuilder()
-        .setTitle("🎫 Verifikacija — Unos koda")
+        .setTitle("🎫 Verifikacija — Dokaz slanja videa")
         .setDescription(
           `Zdravo ${member}! 👋\n\n` +
           "**Uputstvo:**\n\n" +
-          "1️⃣ Unesite **sedmocifreni kod** koji ste videli u folderu na linku\n" +
-          "2️⃣ Napišite kod ovde u tiketu\n" +
-          "3️⃣ Sačekajte da Admin proveri i potvrdi vašu verifikaciju\n\n" +
-          "✅ Nakon potvrde dobićete pristup svom sadržaju!\n\n" +
-          "⚠️ **Napomena:** Kod mora biti tačan kako bi verifikacija bila prihvaćena!"
+          "1️⃣ Pošaljite **screenshot** kao dokaz da ste poslali video u drugi server\n" +
+          "2️⃣ Screenshot mora jasno prikazivati da ste poslali video u kanalu drugog servera\n" +
+          "3️⃣ Sačekajte da Admin pregleda vaš screenshot i odobri pristup\n\n" +
+          "✅ Nakon odobrenja dobićete pristup ekskluzivnom 18+ sadržaju koji smo pripremili za vas!\n\n" +
+          "⚠️ **Napomena:** Screenshot mora biti jasan i čitak kako bi verifikacija bila prihvaćena!"
         )
         .setColor(0xFF0000)
         .setTimestamp()
@@ -86,9 +86,10 @@ module.exports = {
       );
 
       await tiketKanal.send({ content: `${member}`, embeds: [embed], components: [zatvoriRow] });
-      await interaction.editReply(`✅ Tvoj tiket je otvoren: <#${tiketKanal.id}>\n\nOdi u tiket i upiši sedmocifreni kod!`);
+      await interaction.editReply(`✅ Tvoj tiket je otvoren: <#${tiketKanal.id}>\n\nOdi u tiket i pošalji screenshot!`);
     }
 
+    // Zatvori tiket
     if (interaction.customId === "zatvori_tiket") {
       await interaction.reply({ content: "🔒 Tiket se zatvara za 5 sekundi...", ephemeral: true });
       setTimeout(() => {

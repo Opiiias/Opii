@@ -2,8 +2,8 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("postaviverifikaciju")
-    .setDescription("Postavi poruku za verifikaciju")
+    .setName("postaviverifikaciju2")
+    .setDescription("Postavi poruku za verifikaciju slanjem videa")
     .addChannelOption(opt =>
       opt.setName("kanal")
         .setDescription("Kanal u koji se šalje poruka")
@@ -51,12 +51,8 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setLabel("🔗 Verifikacija")
-        .setStyle(ButtonStyle.Link)
-        .setURL("https://link-hub.net/6147336/N8qeeebrob8i"),
-      new ButtonBuilder()
-        .setCustomId("verifikovao_sam_se")
-        .setLabel("✅ Verifikovao sam se")
+        .setCustomId("poslao_sam_video")
+        .setLabel("✅ Poslao sam video")
         .setStyle(ButtonStyle.Primary)
     );
 
