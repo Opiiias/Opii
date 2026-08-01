@@ -2,7 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("ocisti")
+    .setName("obrisiporuke")
     .setDescription("Briše određeni broj poruka u ovom kanalu")
     .addIntegerOption(opt =>
       opt.setName("broj")
