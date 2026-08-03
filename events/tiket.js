@@ -5,24 +5,24 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
-    // Kada klikne "Već sam ušao u grupu"
-    if (interaction.customId === "vec_usao") {
+    // Kada klikne "Poslao sam video"
+    if (interaction.customId === "poslao_sam_video") {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId("otvori_tiket")
+          .setCustomId("otvori_tiket_video")
           .setLabel("🎫 Otvori tiket")
           .setStyle(ButtonStyle.Success)
       );
 
       return interaction.reply({
-        content: "✅ Odlično! Ako si se pridružio Telegram grupi i skrinuo ekran, klikni dugme ispod da otvoriš tiket i pošalješ screenshot kao dokaz!\n\n👇 Klikni **Otvori tiket** ispod!",
+        content: "✅ Odlično! Ako si poslao video u drugi server klikni dugme ispod da otvoriš tiket i pošalješ screenshot kao dokaz!\n\n👇 Klikni **Otvori tiket** ispod!",
         components: [row],
         ephemeral: true
       });
     }
 
-    // Otvori tiket
-    if (interaction.customId === "otvori_tiket") {
+    // Otvori tiket za video verifikaciju
+    if (interaction.customId === "otvori_tiket_video") {
       await interaction.deferReply({ ephemeral: true });
 
       const guild = interaction.guild;
@@ -64,15 +64,15 @@ module.exports = {
       });
 
       const embed = new EmbedBuilder()
-        .setTitle("🎫 Verifikacija — Telegram Grupa")
+        .setTitle("🎫 Verifikacija — Dokaz slanja videa")
         .setDescription(
           `Zdravo ${member}! 👋\n\n` +
           "**Uputstvo:**\n\n" +
-          "1️⃣ Pošaljite **screenshot** kao dokaz da ste se pridružili Telegram grupi\n" +
-          "2️⃣ Screenshot mora jasno prikazivati da ste član grupe\n" +
+          "1️⃣ Pošaljite **screenshot** kao dokaz da ste poslali video u drugi server\n" +
+          "2️⃣ Screenshot mora jasno prikazivati da ste poslali video u kanalu drugog servera\n" +
           "3️⃣ Sačekajte da Admin pregleda vaš screenshot i odobri pristup\n\n" +
-          "✅ Nakon odobrenja dobićete pristup ekskluzivnom 18+ sadržaju!\n\n" +
-          "⚠️ **Napomena:** Screenshot mora biti jasan i čitak!"
+          "✅ Nakon odobrenja dobićete pristup ekskluzivnom 18+ sadržaju koji smo pripremili za vas!\n\n" +
+          "⚠️ **Napomena:** Screenshot mora biti jasan i čitak kako bi verifikacija bila prihvaćena!"
         )
         .setColor(0xFF0000)
         .setTimestamp()

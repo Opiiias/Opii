@@ -2,8 +2,8 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("postaviverifikaciju")
-    .setDescription("Postavi poruku za Telegram verifikaciju")
+    .setName("postaviverifikaciju2")
+    .setDescription("Postavi poruku za verifikaciju slanjem videa")
     .addChannelOption(opt =>
       opt.setName("kanal")
         .setDescription("Kanal u koji se šalje poruka")
@@ -51,12 +51,8 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setLabel("📲 Uđi u Telegram grupu")
-        .setStyle(ButtonStyle.Link)
-        .setURL("https://t.me/balkanskedr"),
-      new ButtonBuilder()
-        .setCustomId("vec_usao")
-        .setLabel("✅ Već sam ušao u grupu")
+        .setCustomId("poslao_sam_video")
+        .setLabel("✅ Poslao sam video")
         .setStyle(ButtonStyle.Primary)
     );
 
