@@ -8,8 +8,8 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand(sub => sub
       .setName("set-channel")
-      .setDescription("Postavi kanal za automatske poruke")
-      .addChannelOption(opt => opt.setName("kanal").setDescription("Kanal").setRequired(true)))
+      .setDescription("Postavi kanale za automatske poruke (odvoji zarezom: #kanal1, #kanal2)")
+      .addStringOption(opt => opt.setName("kanali").setDescription("Kanali odvojeni zarezom").setRequired(true)))
     .addSubcommand(sub => sub
       .setName("set-interval")
       .setDescription("Na koliko poruka Opii šalje poruku")
@@ -51,9 +51,16 @@ module.exports = {
     );
 
     if (sub === "set-channel") {
-      const ch = interaction.options.getChannel("kanal");
-      await ServerConfig.updateOne({ guildId }, { "repeat.channelId": ch.id });
-      embed.setColor(0x3498db).setTitle("✅ Repeat kanal postavljen").setDescription(`<#${ch.id}>`);
+      const input = interaction.options.getString("kanali");
+      const ids = input.match(/\d{17,20}/g);
+
+      if (!ids || ids.length === 0) {
+        embed.setColor(0xe74c3c).setTitle("❌ Greška").setDescription("Nisi uneo validne kanale!");
+        return interaction.reply({ embeds: [embed], ephemeral: true });
+      }
+
+      await ServerConfig.updateOne({ guildId }, { "repeat.channelIds": ids });
+      embed.setColor(0x3498db).setTitle("✅ Repeat kanali postavljeni").setDescription(ids.map(id => `<#${id}>`).join(", "));
     } else if (sub === "set-interval") {
       const broj = interaction.options.getInteger("broj");
       await ServerConfig.updateOne({ guildId }, { "repeat.interval": broj });

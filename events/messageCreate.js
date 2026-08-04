@@ -62,35 +62,39 @@ module.exports = {
     // Repeat sistem
     const { ServerConfig: SC } = require("../schemas");
     const repeatConfig = await SC.findOne({ guildId });
-    if (repeatConfig?.repeat?.enabled && message.channel.id === repeatConfig.repeat.channelId) {
-      const key = `repeat-${guildId}-${repeatConfig.repeat.channelId}`;
-      if (!spamMap.has(key)) spamMap.set(key, 0);
-      const count = spamMap.get(key) + 1;
+    if (repeatConfig?.repeat?.enabled) {
+      const kanali = repeatConfig.repeat.channelIds || (repeatConfig.repeat.channelId ? [repeatConfig.repeat.channelId] : []);
 
-      if (count >= (repeatConfig.repeat.interval || 5)) {
-        spamMap.set(key, 0);
+      if (kanali.includes(message.channel.id)) {
+        const key = `repeat-${guildId}-${message.channel.id}`;
+        if (!spamMap.has(key)) spamMap.set(key, 0);
+        const count = spamMap.get(key) + 1;
 
-        const repeatEmbed = new EmbedBuilder().setTimestamp().setFooter({ text: "Opii Bot" });
-        if (repeatConfig.repeat.color) repeatEmbed.setColor(repeatConfig.repeat.color);
-        if (repeatConfig.repeat.message) repeatEmbed.setDescription(repeatConfig.repeat.message);
-        if (repeatConfig.repeat.image) repeatEmbed.setImage(repeatConfig.repeat.image);
-        if (repeatConfig.repeat.url) repeatEmbed.setURL(repeatConfig.repeat.url);
-        const mention = repeatConfig.repeat.mention || null;
+        if (count >= (repeatConfig.repeat.interval || 5)) {
+          spamMap.set(key, 0);
 
-        // Obriši prethodnu repeat poruku
-        const prethodna = lastRepeatMsg.get(key);
-        if (prethodna) {
-          try {
-            await prethodna.delete();
-          } catch (_) {}
+          const repeatEmbed = new EmbedBuilder().setTimestamp().setFooter({ text: "Opii Bot" });
+          if (repeatConfig.repeat.color) repeatEmbed.setColor(repeatConfig.repeat.color);
+          if (repeatConfig.repeat.message) repeatEmbed.setDescription(repeatConfig.repeat.message);
+          if (repeatConfig.repeat.image) repeatEmbed.setImage(repeatConfig.repeat.image);
+          if (repeatConfig.repeat.url) repeatEmbed.setURL(repeatConfig.repeat.url);
+          const mention = repeatConfig.repeat.mention || null;
+
+          // Obriši prethodnu repeat poruku
+          const prethodna = lastRepeatMsg.get(key);
+          if (prethodna) {
+            try {
+              await prethodna.delete();
+            } catch (_) {}
+          }
+
+          // Pošalji novu i zapamti je
+          const novaPoruka = await message.channel.send({ content: mention, embeds: [repeatEmbed] });
+          lastRepeatMsg.set(key, novaPoruka);
+
+        } else {
+          spamMap.set(key, count);
         }
-
-        // Pošalji novu i zapamti je
-        const novaPoruka = await message.channel.send({ content: mention, embeds: [repeatEmbed] });
-        lastRepeatMsg.set(key, novaPoruka);
-
-      } else {
-        spamMap.set(key, count);
       }
     }
 
