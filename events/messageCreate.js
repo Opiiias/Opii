@@ -3,6 +3,7 @@ const { ServerConfig, BannedWord, Warning, LevelConfig, MemberLevel } = require(
 const { sendModLog } = require("../utils/modLog");
 
 const spamMap = new Map();
+const lastRepeatMsg = new Map();
 
 module.exports = {
   name: Events.MessageCreate,
@@ -10,7 +11,6 @@ module.exports = {
   async execute(message, client) {
     if (message.author.bot || !message.guild) return;
 
-    // Prefix komanda -lb
     if (message.content.toLowerCase() === "-lb") {
       const guildId = message.guild.id;
       const top = await MemberLevel.find({ guildId }).sort({ level: -1, messageCount: -1 }).limit(15);
@@ -31,7 +31,6 @@ module.exports = {
     const guildId = message.guild.id;
     const userId = message.author.id;
 
-    // Level sistem
     const levelConfig = await LevelConfig.findOne({ guildId });
     if (levelConfig?.enabled) {
       const mpl = levelConfig.messagesPerLevel || 50;
@@ -67,15 +66,29 @@ module.exports = {
       const key = `repeat-${guildId}-${repeatConfig.repeat.channelId}`;
       if (!spamMap.has(key)) spamMap.set(key, 0);
       const count = spamMap.get(key) + 1;
+
       if (count >= (repeatConfig.repeat.interval || 5)) {
         spamMap.set(key, 0);
+
         const repeatEmbed = new EmbedBuilder().setTimestamp().setFooter({ text: "Opii Bot" });
         if (repeatConfig.repeat.color) repeatEmbed.setColor(repeatConfig.repeat.color);
         if (repeatConfig.repeat.message) repeatEmbed.setDescription(repeatConfig.repeat.message);
         if (repeatConfig.repeat.image) repeatEmbed.setImage(repeatConfig.repeat.image);
         if (repeatConfig.repeat.url) repeatEmbed.setURL(repeatConfig.repeat.url);
         const mention = repeatConfig.repeat.mention || null;
-        message.channel.send({ content: mention, embeds: [repeatEmbed] });
+
+        // Obriši prethodnu repeat poruku
+        const prethodna = lastRepeatMsg.get(key);
+        if (prethodna) {
+          try {
+            await prethodna.delete();
+          } catch (_) {}
+        }
+
+        // Pošalji novu i zapamti je
+        const novaPoruka = await message.channel.send({ content: mention, embeds: [repeatEmbed] });
+        lastRepeatMsg.set(key, novaPoruka);
+
       } else {
         spamMap.set(key, count);
       }
