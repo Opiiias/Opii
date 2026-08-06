@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 const KANALI = [
-  { id: "1534592641587478628", link: "https://direct-link.net/6147336/gokbDNL7Y803", slika: "https://i.imgur.com/kBHCdAj.jpg" },
+  { id: "1534592641587478628", link: "https://direct-link.net/6147336/gokbDNL7Y803", slika: "https://i.imgur.com/oxOzjux.jpg" },
   { id: "1534592670326984734", link: "https://direct-link.net/6147336/Wq9PYp2RK0UH", slika: "https://i.imgur.com/Mm0XBRd.jpg" },
   { id: "1534592748861132891", link: "https://link-hub.net/6147336/hAEZzjSY8siQ", slika: "https://i.imgur.com/TzWzlFb.jpg" },
   { id: "1534592768133828658", link: "https://link-hub.net/6147336/pxK2XkAKphC5", slika: "https://i.imgur.com/fWbVmO0.jpg" },
@@ -59,18 +59,22 @@ module.exports = {
 
         const chName = ch.name.toUpperCase();
 
+        const opis =
+          `📂 : Mega file with content 🥵 👇\n` +
+          `videos and pictures\n\n` +
+          `**[Open Link](${kanal.link})**\n\n` +
+          `When you click the link, you get to the content!`;
+
         const embed = new EmbedBuilder()
           .setTitle(`🔥 NEW PREMIUM! — ${chName}`)
-          .setURL(kanal.link)
-          .setDescription(
-            `📂 : Mega file with content 🥵 👇\nvideos and pictures\n\n` +
-            `When you click the link, you get to the content!\n\n` +
-            `-# The links are not viruses, no data is saved and so on.`
-          )
+          .setDescription(opis)
           .setColor(0xFF4500)
           .setTimestamp();
 
         if (kanal.slika) embed.setImage(kanal.slika);
+
+        // Dodaj footer malim slovima
+        embed.setFooter({ text: "The links are not viruses, no data is saved and so on." });
 
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
