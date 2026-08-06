@@ -36,6 +36,7 @@ const KANALI = [
   { id: "1534593436328399059", link: "https://link-center.net/6147336/je9EMzroTetQ", slika: "https://i.imgur.com/T2sF3gi.jpg" },
   { id: "1534593451683872931", link: "https://link-center.net/6147336/W6mXXF8EyNR5", slika: "https://i.imgur.com/vPayqkW.jpg" },
   { id: "1534593472026378481", link: "https://link-target.net/6147336/L1LZOulEQp5W", slika: "https://i.imgur.com/cur8pa3.jpg" },
+  { id: "1534593562245857540", link: "https://link-hub.net/6147336/X9E7DfXhDS9q", slika: "https://i.imgur.com/0KpZsae.jpg" },
   { id: "1534593577349288047", link: "https://direct-link.net/6147336/OucZgSYo6Gux", slika: "https://i.imgur.com/FzATwHh.jpg" },
 ];
 
