@@ -61,9 +61,9 @@ module.exports = {
 
         const embed = new EmbedBuilder()
           .setTitle(`🔥 NEW PREMIUM! — ${chName}`)
+          .setURL(kanal.link)
           .setDescription(
             `📂 : Mega file with content 🥵 👇\nvideos and pictures\n\n` +
-            `[${kanal.link}](${kanal.link})\n\n` +
             `When you click the link, you get to the content!\n\n` +
             `-# The links are not viruses, no data is saved and so on.`
           )
