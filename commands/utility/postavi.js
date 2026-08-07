@@ -111,8 +111,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor(0xFF4500)
       .setTitle(`🔥 ${naslov}`)
-      .setDescription(opis_poruke)
-      .setTimestamp();
+      .setDescription(opis_poruke);
 
     if (slika) embed.setImage(slika.url);
 
@@ -124,7 +123,7 @@ module.exports = {
       content: tagContent,
       embeds: [embed],
       components: [row],
-      allowedMentions: { parse: ["everyone", "here", "roles"] }
+      allowedMentions: { parse: ["everyone", "roles"] }
     });
   }
 };
