@@ -31,8 +31,13 @@ module.exports = {
     )
     .addStringOption(opt =>
       opt.setName("tag")
-        .setDescription("Tag koji se stavlja uz poruku (npr. @everyone)")
+        .setDescription("Tag: everyone, here, ili ID role")
         .setRequired(false)
+        .addChoices(
+          { name: "@everyone", value: "@everyone" },
+          { name: "@here", value: "@here" },
+          { name: "Bez taga", value: "none" }
+        )
     )
     .addStringOption(opt =>
       opt.setName("opis")
@@ -49,11 +54,10 @@ module.exports = {
     const naslov = interaction.options.getString("naslov");
     const link = interaction.options.getString("link");
     const jezik = interaction.options.getString("jezik");
-    const tag = interaction.options.getString("tag") || null;
+    const tag = interaction.options.getString("tag") || "none";
     const opis = interaction.options.getString("opis");
     const slika = interaction.options.getAttachment("slika");
 
-    // Provjeri zabranjene domene
     const linkLower = link.toLowerCase();
     const zabranjeno = ZABRANJENI_DOMENI.find(d => linkLower.includes(d));
 
@@ -64,7 +68,6 @@ module.exports = {
       });
     }
 
-    // Provjeri da li je validan URL
     try {
       new URL(link);
     } catch {
@@ -111,10 +114,13 @@ module.exports = {
         .setURL(link)
     );
 
+    const tagContent = tag === "none" ? null : tag;
+
     await interaction.reply({
-      content: tag || null,
+      content: tagContent,
       embeds: [embed],
-      components: [row]
+      components: [row],
+      allowedMentions: { parse: ["everyone", "here", "roles"] }
     });
   }
 };
