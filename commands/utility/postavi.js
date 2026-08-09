@@ -17,7 +17,7 @@ module.exports = {
     )
     .addStringOption(opt =>
       opt.setName("link")
-        .setDescription("Link do tvog sadržaja")
+        .setDescription("Glavni link do tvog sadržaja")
         .setRequired(true)
     )
     .addStringOption(opt =>
@@ -48,6 +48,16 @@ module.exports = {
       opt.setName("slika")
         .setDescription("Prevuci i pusti sliku (opciono)")
         .setRequired(false)
+    )
+    .addStringOption(opt =>
+      opt.setName("link2")
+        .setDescription("Drugi link (opciono)")
+        .setRequired(false)
+    )
+    .addStringOption(opt =>
+      opt.setName("ime_buttna")
+        .setDescription("Ime drugog buttna (opciono)")
+        .setRequired(false)
     ),
 
   async execute(interaction) {
@@ -57,6 +67,8 @@ module.exports = {
     const tag = interaction.options.getString("tag") || "none";
     const opis = interaction.options.getString("opis");
     const slika = interaction.options.getAttachment("slika");
+    const link2 = interaction.options.getString("link2");
+    const imeButtna = interaction.options.getString("ime_buttna") || "🔗 Link 2";
 
     const linkLower = link.toLowerCase();
     const zabranjeno = ZABRANJENI_DOMENI.find(d => linkLower.includes(d));
@@ -111,11 +123,26 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor(0xFF4500)
       .setTitle(`🔥 ${naslov}`)
-      .setDescription(opis_poruke);
+      .setDescription(opis_poruke)
+      .setTimestamp();
 
     if (slika) embed.setImage(slika.url);
 
     const row = new ActionRowBuilder().addComponents(dugme);
+
+    // Dodaj drugi buttn ako postoji link2
+    if (link2) {
+      try {
+        new URL(link2);
+        const dugme2 = new ButtonBuilder()
+          .setLabel(imeButtna)
+          .setStyle(ButtonStyle.Link)
+          .setURL(link2);
+        row.addComponents(dugme2);
+      } catch {
+        // ako link2 nije validan jednostavno ga preskoči
+      }
+    }
 
     const tagContent = tag === "none" ? null : tag;
 
@@ -123,7 +150,7 @@ module.exports = {
       content: tagContent,
       embeds: [embed],
       components: [row],
-      allowedMentions: { parse: ["everyone", "roles"] }
+      allowedMentions: { parse: ["everyone", "here", "roles"] }
     });
   }
 };
