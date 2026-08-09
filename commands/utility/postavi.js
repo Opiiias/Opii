@@ -130,7 +130,6 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(dugme);
 
-    // Dodaj drugi buttn ako postoji link2
     if (link2) {
       try {
         new URL(link2);
@@ -150,7 +149,9 @@ module.exports = {
       content: tagContent,
       embeds: [embed],
       components: [row],
-      allowedMentions: { parse: ["everyone", "here", "roles"] }
+      allowedMentions: {
+        parse: tag === "@here" ? ["everyone", "roles"] : ["everyone", "roles"]
+      }
     });
   }
 };
