@@ -113,13 +113,8 @@ app.listen(WEBHOOK_PORT, () => {
 
 (async () => {
   await connectDB();
-  console.log("🔄 Pokušavam login...");
-  await client.login(process.env.DISCORD_TOKEN).catch(err => {
-    console.error("❌ Login greška:", err.message);
-    process.exit(1);
-  });
-  console.log("✅ Login uspešan!");
   await registerCommands();
+  await client.login(process.env.DISCORD_TOKEN);
 })();
 
 module.exports = client;
