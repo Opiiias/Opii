@@ -105,8 +105,8 @@ app.listen(WEBHOOK_PORT, () => {
 
 (async () => {
   await connectDB();
-  await registerCommands();
   await client.login(process.env.DISCORD_TOKEN);
+  await registerCommands();
 })();
 
 module.exports = client;
