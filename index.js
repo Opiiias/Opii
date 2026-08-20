@@ -76,10 +76,10 @@ async function registerCommands() {
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
   try {
     console.log("🔄 Registrujem slash komande...");
-    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
+    const result = await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
       body: slashCommandData,
     });
-    console.log(`✅ Registrovano ${slashCommandData.length} slash komandi.`);
+    console.log(`✅ Registrovano ${result.length} slash komandi.`);
   } catch (err) {
     console.error("❌ Greška pri registraciji komandi:", err.message);
   }
@@ -113,8 +113,8 @@ app.listen(WEBHOOK_PORT, () => {
 
 (async () => {
   await connectDB();
-  await registerCommands();
   await client.login(process.env.DISCORD_TOKEN);
+  await registerCommands();
 })();
 
 module.exports = client;
