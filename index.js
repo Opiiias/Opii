@@ -22,6 +22,14 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel, Partials.GuildMember],
 });
 
+client.on('error', (err) => {
+  console.error('❌ Client error:', err.message);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled rejection:', err?.message || err);
+});
+
 client.commands = new Collection();
 
 const commandsPath = path.join(__dirname, "commands");
