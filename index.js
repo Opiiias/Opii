@@ -73,7 +73,7 @@ async function registerCommands() {
     });
     console.log(`✅ Registrovano ${slashCommandData.length} slash komandi.`);
   } catch (err) {
-    console.error("❌ Greška pri registraciji komandi:", err);
+    console.error("❌ Greška pri registraciji komandi:", err.message);
   }
 }
 
@@ -105,7 +105,12 @@ app.listen(WEBHOOK_PORT, () => {
 
 (async () => {
   await connectDB();
-  await client.login(process.env.DISCORD_TOKEN);
+  console.log("🔄 Pokušavam login...");
+  await client.login(process.env.DISCORD_TOKEN).catch(err => {
+    console.error("❌ Login greška:", err.message);
+    process.exit(1);
+  });
+  console.log("✅ Login uspešan!");
   await registerCommands();
 })();
 
