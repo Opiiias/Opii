@@ -105,16 +105,32 @@ module.exports = {
     const linkbanConfig = await ServerConfig.findOne({ guildId });
     if (linkbanConfig?.linkban?.enabled && linkbanConfig?.linkban?.kanali?.includes(message.channel.id)) {
       if (!message.member.permissions.has("Administrator")) {
+
+        // DEBUG - vidimo sta Discord salje
+        console.log("🔍 Linkban check:", JSON.stringify({
+          content: message.content?.substring(0, 100),
+          flags: message.flags?.toArray(),
+          hasReference: !!message.reference,
+          referenceData: message.reference,
+          embedsCount: message.embeds?.length,
+          embedTypes: message.embeds?.map(e => e.type),
+          messageType: message.type,
+          forwarded: message.forwarded,
+        }));
+
         let trebaBrisati = false;
         let razlog = "";
 
-        // Provjeri forwarded poruke
-        if (message.flags?.has?.("IS_CROSSPOST") || message.reference?.messageId) {
-          const embed = message.embeds?.[0];
-          if (embed?.footer?.text?.includes("•") || message.content === "") {
-            trebaBrisati = true;
-            razlog = "Forwarded poruka sa drugog servera";
-          }
+        // Provjeri forwarded poruke - Discord type 19 je forwarded
+        if (message.type === 19 || message.forwarded === true) {
+          trebaBrisati = true;
+          razlog = "Forwarded poruka sa drugog servera";
+        }
+
+        // Provjeri IS_CROSSPOST flag
+        if (!trebaBrisati && message.flags?.has("IS_CROSSPOST")) {
+          trebaBrisati = true;
+          razlog = "Forwarded poruka sa drugog servera";
         }
 
         // Provjeri linkove u tekstu
@@ -128,7 +144,7 @@ module.exports = {
           }
         }
 
-        // Provjeri embeds (Discord automatski pravi embed od invite linka)
+        // Provjeri embeds
         if (!trebaBrisati && message.embeds.length > 0) {
           for (const embed of message.embeds) {
             if (embed.url && ZABRANJENI_PATERNI.some(p => p.test(embed.url))) {
