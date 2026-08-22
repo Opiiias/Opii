@@ -5,6 +5,13 @@ const { sendModLog } = require("../utils/modLog");
 const spamMap = new Map();
 const lastRepeatMsg = new Map();
 
+const ZABRANJENI_PATERNI = [
+  /discord\.gg\/[a-zA-Z0-9]+/i,
+  /discord\.com\/invite\/[a-zA-Z0-9]+/i,
+  /t\.me\/[a-zA-Z0-9]+/i,
+  /\.gg\/[a-zA-Z0-9]+/i,
+];
+
 module.exports = {
   name: Events.MessageCreate,
   once: false,
@@ -80,20 +87,95 @@ module.exports = {
           if (repeatConfig.repeat.url) repeatEmbed.setURL(repeatConfig.repeat.url);
           const mention = repeatConfig.repeat.mention || null;
 
-          // Obriši prethodnu repeat poruku
           const prethodna = lastRepeatMsg.get(key);
           if (prethodna) {
-            try {
-              await prethodna.delete();
-            } catch (_) {}
+            try { await prethodna.delete(); } catch (_) {}
           }
 
-          // Pošalji novu i zapamti je
           const novaPoruka = await message.channel.send({ content: mention, embeds: [repeatEmbed] });
           lastRepeatMsg.set(key, novaPoruka);
 
         } else {
           spamMap.set(key, count);
+        }
+      }
+    }
+
+    // Linkban sistem
+    const linkbanConfig = await ServerConfig.findOne({ guildId });
+    if (linkbanConfig?.linkban?.enabled && linkbanConfig?.linkban?.kanali?.includes(message.channel.id)) {
+      if (!message.member.permissions.has("Administrator")) {
+        let trebaBrisati = false;
+        let razlog = "";
+
+        // Provjeri forwarded poruke
+        if (message.flags?.has?.("IS_CROSSPOST") || message.reference?.messageId) {
+          const embed = message.embeds?.[0];
+          if (embed?.footer?.text?.includes("•") || message.content === "") {
+            trebaBrisati = true;
+            razlog = "Forwarded poruka sa drugog servera";
+          }
+        }
+
+        // Provjeri linkove u tekstu
+        if (!trebaBrisati) {
+          for (const patern of ZABRANJENI_PATERNI) {
+            if (patern.test(message.content)) {
+              trebaBrisati = true;
+              razlog = "Discord/Telegram link u poruci";
+              break;
+            }
+          }
+        }
+
+        // Provjeri embeds (Discord automatski pravi embed od invite linka)
+        if (!trebaBrisati && message.embeds.length > 0) {
+          for (const embed of message.embeds) {
+            if (embed.url && ZABRANJENI_PATERNI.some(p => p.test(embed.url))) {
+              trebaBrisati = true;
+              razlog = "Discord/Telegram link u embedu";
+              break;
+            }
+            if (embed.description && ZABRANJENI_PATERNI.some(p => p.test(embed.description))) {
+              trebaBrisati = true;
+              razlog = "Discord/Telegram link u embedu";
+              break;
+            }
+          }
+        }
+
+        if (trebaBrisati) {
+          try { await message.delete(); } catch (_) {}
+
+          const akcija = linkbanConfig.linkban.akcija || "timeout";
+          const vreme = linkbanConfig.linkban.vreme || 10;
+          const member = message.member;
+
+          try {
+            switch (akcija) {
+              case "ban":
+                if (member.bannable) {
+                  await member.ban({ deleteMessageSeconds: vreme * 24 * 60 * 60, reason: razlog });
+                }
+                break;
+              case "kick":
+                if (member.kickable) await member.kick(razlog);
+                break;
+              case "timeout":
+                if (member.moderatable) await member.timeout(vreme * 60 * 1000, razlog);
+                break;
+            }
+
+            const upozorenjeMsg = await message.channel.send({
+              content: `⛔ ${message.author} — **${razlog}**! Akcija: **${akcija.toUpperCase()}**`,
+            });
+            setTimeout(() => upozorenjeMsg.delete().catch(() => {}), 5000);
+
+          } catch (e) {
+            console.error("Linkban greška:", e.message);
+          }
+
+          return;
         }
       }
     }
