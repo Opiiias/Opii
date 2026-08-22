@@ -49,6 +49,12 @@ const ServerConfigSchema = new Schema({
     autoDelete: { type: Number, default: null },
     kanali: { type: [String], default: [] },
   },
+  linkban: {
+    enabled: { type: Boolean, default: false },
+    akcija: { type: String, default: null },
+    vreme: { type: Number, default: null },
+    kanali: { type: [String], default: [] },
+  },
   autoMod: {
     enabled: { type: Boolean, default: false },
     bannedWords: {
