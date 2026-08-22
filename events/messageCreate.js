@@ -106,29 +106,12 @@ module.exports = {
     if (linkbanConfig?.linkban?.enabled && linkbanConfig?.linkban?.kanali?.includes(message.channel.id)) {
       if (!message.member.permissions.has("Administrator")) {
 
-        // DEBUG - vidimo sta Discord salje
-        console.log("🔍 Linkban check:", JSON.stringify({
-          content: message.content?.substring(0, 100),
-          flags: message.flags?.toArray(),
-          hasReference: !!message.reference,
-          referenceData: message.reference,
-          embedsCount: message.embeds?.length,
-          embedTypes: message.embeds?.map(e => e.type),
-          messageType: message.type,
-          forwarded: message.forwarded,
-        }));
-
         let trebaBrisati = false;
         let razlog = "";
 
-        // Provjeri forwarded poruke - Discord type 19 je forwarded
-        if (message.type === 19 || message.forwarded === true) {
-          trebaBrisati = true;
-          razlog = "Forwarded poruka sa drugog servera";
-        }
-
-        // Provjeri IS_CROSSPOST flag
-        if (!trebaBrisati && message.flags?.has("IS_CROSSPOST")) {
+        // Forwarded poruka ima HasSnapshot flag i hasReference
+        const isForwarded = message.flags?.toArray()?.includes("HasSnapshot") && !!message.reference;
+        if (isForwarded) {
           trebaBrisati = true;
           razlog = "Forwarded poruka sa drugog servera";
         }
