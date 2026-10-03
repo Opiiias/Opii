@@ -15,9 +15,9 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildModeration,
+    // GatewayIntentBits.GuildMembers,   // ⚠️ privremeno uklonjeno — čeka Discord review (Privileged Intent)
+    // GatewayIntentBits.MessageContent, // ⚠️ privremeno uklonjeno — čeka Discord review (Privileged Intent)
   ],
   partials: [Partials.Message, Partials.Channel, Partials.GuildMember],
 });
