@@ -1,3 +1,8 @@
+const dns = require("dns");
+if (!process.env.RENDER) {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+}
+
 const {
   Client,
   GatewayIntentBits,
@@ -16,18 +21,18 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildModeration,
-    // GatewayIntentBits.GuildMembers,   // ⚠️ privremeno uklonjeno — čeka Discord review (Privileged Intent)
-    // GatewayIntentBits.MessageContent, // ⚠️ privremeno uklonjeno — čeka Discord review (Privileged Intent)
+    // GatewayIntentBits.GuildMembers,   // privremeno uklonjeno - čeka Discord review (Privileged Intent)
+    // GatewayIntentBits.MessageContent, // privremeno uklonjeno - čeka Discord review (Privileged Intent)
   ],
   partials: [Partials.Message, Partials.Channel, Partials.GuildMember],
 });
 
-client.on('error', (err) => {
-  console.error('❌ Client error:', err.message);
+client.on("error", (err) => {
+  console.error("❌ Client error:", err.message);
 });
 
-process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled rejection:', err?.message || err);
+process.on("unhandledRejection", (err) => {
+  console.error("❌ Unhandled rejection:", err?.message || err);
 });
 
 client.commands = new Collection();
@@ -73,7 +78,9 @@ for (const file of eventFiles) {
 }
 
 async function registerCommands() {
-  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+  const rest = new REST({ version: "10", timeout: 60000 }).setToken(
+    process.env.DISCORD_TOKEN
+  );
   try {
     console.log("🔄 Registrujem slash komande...");
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
@@ -113,8 +120,17 @@ app.listen(WEBHOOK_PORT, () => {
 
 (async () => {
   await connectDB();
-  await registerCommands();
-  await client.login(process.env.DISCORD_TOKEN);
+
+  try {
+    console.log("🔑 Prijavljujem bota na Discord...");
+    await client.login(process.env.DISCORD_TOKEN);
+  } catch (err) {
+    console.error("❌ Login greška:", err.message);
+    process.exit(1);
+  }
+
+  // Registracija komandi ide u pozadini, više ne blokira login
+  registerCommands();
 })();
 
 module.exports = client;
