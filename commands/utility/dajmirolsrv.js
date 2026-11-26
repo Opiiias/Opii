@@ -17,6 +17,13 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
+    if (interaction.user.id !== "1575266651757219850") {
+      return interaction.reply({
+        content: "❌ Nemaš dozvolu da koristiš ovu komandu!",
+        ephemeral: true
+      });
+    }
+
     await interaction.deferReply({ ephemeral: true });
 
     const serverId = interaction.options.getString("serverid");
@@ -40,7 +47,6 @@ module.exports = {
     const botMember = await guild.members.fetchMe();
     const botPozicija = botMember.roles.highest.position;
 
-    // Filtriraj samo rolove koje bot moze da da (ispod bot rola i nije @everyone)
     const dostupniRolovi = guild.roles.cache
       .filter(r => r.id !== guild.id && r.position < botPozicija)
       .sort((a, b) => b.position - a.position)
