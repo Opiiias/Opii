@@ -5,6 +5,39 @@ module.exports = {
   name: Events.InteractionCreate,
   once: false,
   async execute(interaction, client) {
+    // Select menu za dajmirolsrv
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("dajrol_")) {
+      await interaction.deferUpdate();
+
+      const [, serverId, userId] = interaction.customId.split("_");
+      const rolId = interaction.values[0];
+
+      try {
+        const guild = await interaction.client.guilds.fetch(serverId);
+        const member = await guild.members.fetch(userId);
+        const rol = await guild.roles.fetch(rolId);
+
+        if (member.roles.cache.has(rol.id)) {
+          return interaction.editReply({
+            content: `❌ Korisnik već ima rol **${rol.name}**!`,
+            components: []
+          });
+        }
+
+        await member.roles.add(rol);
+        await interaction.editReply({
+          content: `✅ Uspešno dodat rol **${rol.name}** korisniku **${member.user.tag}** na serveru **${guild.name}**!`,
+          components: []
+        });
+      } catch (e) {
+        await interaction.editReply({
+          content: `❌ Greška pri dodeli rola: ${e.message}`,
+          components: []
+        });
+      }
+      return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, StringSelectMenuBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,11 +14,6 @@ module.exports = {
         .setDescription("ID korisnika kome se daje rol")
         .setRequired(true)
     )
-    .addStringOption(opt =>
-      opt.setName("rolid")
-        .setDescription("ID rola koji se daje")
-        .setRequired(true)
-    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
@@ -26,7 +21,6 @@ module.exports = {
 
     const serverId = interaction.options.getString("serverid");
     const userId = interaction.options.getString("userid");
-    const rolId = interaction.options.getString("rolid");
 
     let guild;
     try {
@@ -42,23 +36,35 @@ module.exports = {
       return interaction.editReply("❌ Taj korisnik nije na tom serveru.");
     }
 
-    let rol;
-    try {
-      rol = await guild.roles.fetch(rolId);
-      if (!rol) throw new Error();
-    } catch {
-      return interaction.editReply("❌ Taj rol ne postoji na tom serveru.");
+    await guild.roles.fetch();
+    const botMember = await guild.members.fetchMe();
+    const botPozicija = botMember.roles.highest.position;
+
+    // Filtriraj samo rolove koje bot moze da da (ispod bot rola i nije @everyone)
+    const dostupniRolovi = guild.roles.cache
+      .filter(r => r.id !== guild.id && r.position < botPozicija)
+      .sort((a, b) => b.position - a.position)
+      .first(25);
+
+    if (dostupniRolovi.length === 0) {
+      return interaction.editReply("❌ Bot nema rolova koje može da dodeli na ovom serveru.");
     }
 
-    if (member.roles.cache.has(rol.id)) {
-      return interaction.editReply(`❌ Korisnik već ima rol **${rol.name}**!`);
-    }
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId(`dajrol_${guild.id}_${member.id}`)
+      .setPlaceholder("Izaberi rol koji želiš da dodeliš")
+      .addOptions(
+        dostupniRolovi.map(r => ({
+          label: r.name,
+          value: r.id,
+        }))
+      );
 
-    try {
-      await member.roles.add(rol);
-      await interaction.editReply(`✅ Uspešno dodat rol **${rol.name}** korisniku **${member.user.tag}** na serveru **${guild.name}**!`);
-    } catch (e) {
-      await interaction.editReply(`❌ Ne mogu da dam ovaj rol. Verovatno je rol viši od uloge bota u hijerarhiji na tom serveru.`);
-    }
+    const row = new ActionRowBuilder().addComponents(selectMenu);
+
+    await interaction.editReply({
+      content: `📋 Izaberi rol za korisnika **${member.user.tag}** na serveru **${guild.name}**:`,
+      components: [row]
+    });
   }
 };
